@@ -4,15 +4,16 @@ using UnityEngine;
 
 public class Agent : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public AgentProperties properties;
 
-    // Update is called once per frame
-    void Update()
+    private int health = 0;
+    private int movement = 0;
+    private Cell cell = null;
+
+    public void MoveTo(Cell _cell)
     {
-        
+        cell.CurrentState = Cell.State.Empty;        
+        cell = _cell;
+        cell.CurrentState = Cell.State.Agent;
     }
 }
