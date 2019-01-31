@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Cell
+public class Cell : MonoBehaviour
 {
     public enum State
     {
@@ -11,12 +11,24 @@ public class Cell
         Obstacle = 2
     }
 
-    public State CurrentState { get; set; }
-    public Vector2Int Position { get; set; }
+    private Vector2Int position;
 
-    public Cell(Vector2Int _position, State _state = State.Empty)
+    public State CurrentState { get; set; }
+    public bool Hover { get; set; }
+    // public Vector2Int Position { get; private set; }
+
+    public void Initialize(Vector2Int pos, State state = State.Empty)
     {
-       Position = _position; 
-       CurrentState = _state;
+        position = pos;
+        CurrentState = state;
+
+        gameObject.transform.position = MapManager.ToWorldPosition(pos);
+    }
+
+
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Hover ? Color.blue : Color.yellow;
+        Gizmos.DrawSphere(transform.position, 0.3f);
     }
 }
