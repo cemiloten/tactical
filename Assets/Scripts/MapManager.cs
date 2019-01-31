@@ -12,6 +12,7 @@ public class MapManager : MonoBehaviour
     private List<Cell> cells;
 
     public static MapManager Instance { get; private set; }
+    public Cell HoverCell { get; private set; }
 
     void Awake()
     {
@@ -50,13 +51,18 @@ public class MapManager : MonoBehaviour
         return new Vector3(pos.x + 0.5f, y, pos.y + 0.5f);
     }
 
+    public static int Distance(Vector2Int start, Vector2Int end)
+    {
+        return (Mathf.Abs(end.x - start.x) + Mathf.Abs(end.y - start.y));
+    }
+
     public void PlaceAgents(List<Agent> agents)
     {
        for (int i = 0; i < agents.Count; ++i)
        {
            int x = Random.Range(0, width);
            int y = Random.Range(0, height);
-           agents[i].MoveTo(new Vector2Int(x, y));
+            agents[i].SnapTo(new Vector2Int(x, y));
        } 
     }
 
@@ -94,7 +100,7 @@ public class MapManager : MonoBehaviour
             Vector2Int pos = new Vector2Int((int)hit.point.x, (int)hit.point.z);
             if (IsValidPosition(pos))
             {
-                CellAt(pos).Hover = true;
+                HoverCell = CellAt(pos);
                 // todo: hover must be true only for cell currently under mouse
             }
        }
