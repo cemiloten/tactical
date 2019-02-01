@@ -11,7 +11,9 @@ public class Agent : MonoBehaviour
     private Cell cell = null;
 
     private bool isMoving = false;
-    private Vector2Int movingTo = new Vector2Int(-1, -1);
+    private List<Cell> path = new List<Cell>();
+    private int pathIndex = 0;
+
     private float movementSpeed = 2f;
     private float epsilon = 0.05f;
 
@@ -20,30 +22,47 @@ public class Agent : MonoBehaviour
 
     void Update()
     {
-       if (isMoving)
+        UpdatePosition();
+    }
+
+    private void UpdatePosition()
+    {
+       if (isMoving && path != null)
        {
-           if (transform.position.x < movingTo.x + 0.5f - epsilon)
-           {
-               transform.Translate(Vector3.right * movementSpeed * Time.deltaTime);
-           }
-           else if (transform.position.z < movingTo.y + 0.5f - epsilon)
-           {
-               transform.Translate(Vector3.forward * movementSpeed * Time.deltaTime);
-           }
-           else if (transform.position.x > movingTo.x + 0.5f + epsilon)
-           {
-               transform.Translate(-Vector3.right * movementSpeed * Time.deltaTime);
-           }
-           else if (transform.position.z > movingTo.y + 0.5f + epsilon)
-           {
-               transform.Translate(-Vector3.forward * movementSpeed * Time.deltaTime);
-           }
-           else
-           {
-               Position = movingTo;
-               isMoving = false;
-           }
+           MoveToNextCell();
        }
+    }
+
+    private void MoveToNextCell()
+    {
+        if (pathIndex == path.Count - 1)
+            return;
+
+        Cell next = path[pathIndex + 1];
+        // todo: use mathf.sin to know direction
+
+
+        // if (transform.position.x < path[pathIndex + 1].Position.x + 0.5f - epsilon)
+        // {
+        //     transform.Translate(Vector3.right * movementSpeed * Time.deltaTime);
+        // }
+        // else if (transform.position.z < path[pathIndex + 1].Position.y + 0.5f - epsilon)
+        // {
+        //     transform.Translate(Vector3.forward * movementSpeed * Time.deltaTime);
+        // }
+        // else if (transform.position.x > path[pathIndex + 1].Position.x + 0.5f + epsilon)
+        // {
+        //     transform.Translate(-Vector3.right * movementSpeed * Time.deltaTime);
+        // }
+        // else if (transform.position.z > path[pathIndex + 1].Position.y + 0.5f + epsilon)
+        // {
+        //     transform.Translate(-Vector3.forward * movementSpeed * Time.deltaTime);
+        // }
+        // else
+        // {
+        //     // finished moving, iterate
+        // }
+
     }
 
     public bool CanMoveTo(Vector2Int pos)
@@ -51,7 +70,12 @@ public class Agent : MonoBehaviour
         if (pos.x < 0 || pos.y < 0)
             return false;
 
-        return movement >= MapManager.Distance(Position, pos);
+        Cell cell = MapManager.Instance.CellAt(pos);
+        if (cell == null)
+            return false;
+
+        return (movement >= MapManager.Distance(Position, pos)
+            && cell.Walkable);
     }
 
     public void MoveTo(Vector2Int pos)
@@ -69,14 +93,11 @@ public class Agent : MonoBehaviour
         }
 
         if (cell)
-        {
             cell.CurrentState = Cell.State.Empty;
-        }
 
-        cell = MapManager.Instance.CellAt(pos);
-        cell.CurrentState = Cell.State.Agent;
+        Cell goal = MapManager.Instance.CellAt(pos);
+        path = AStar.FindPath(cell, goal);
         isMoving = true;
-        movingTo = pos;
     }
 
     public void SnapTo(Vector2Int pos)

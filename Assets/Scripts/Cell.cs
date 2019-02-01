@@ -11,14 +11,15 @@ public class Cell : MonoBehaviour
         Obstacle = 2
     }
 
-    private Vector2Int position;
 
+    public Vector2Int Position { get; private set; }
     public State CurrentState { get; set; }
     public bool Hover { get; set; }
+    public bool Walkable { get { return CurrentState == State.Empty; } }
 
     public void Initialize(Vector2Int pos, State state = State.Empty)
     {
-        position = pos;
+        Position = pos;
         CurrentState = state;
         gameObject.transform.position = MapManager.ToWorldPosition(pos);
     }
@@ -26,7 +27,27 @@ public class Cell : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        Gizmos.color = MapManager.Instance.HoverCell == this ? Color.blue : Color.yellow;
-        Gizmos.DrawSphere(transform.position, 0.2f);
+        // Gizmos.color = MapManager.Instance.HoverCell == this ? Color.blue : Color.yellow;
+        Gizmos.color = Color.yellow;
+        if (MapManager.Instance.path != null)
+        {
+            if (MapManager.Instance.path.Contains(this))
+                Gizmos.color = Color.green;
+        }
+
+        Gizmos.DrawCube(transform.position, new Vector3(0.95f, 0.01f, 0.95f));
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj == null || GetType() != obj.GetType())
+            return false;
+        Cell other = (Cell)obj; 
+        return Position == other.Position && CurrentState == other.CurrentState;
+    }
+    
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
     }
 }

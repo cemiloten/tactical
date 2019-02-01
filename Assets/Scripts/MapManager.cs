@@ -14,6 +14,10 @@ public class MapManager : MonoBehaviour
     public static MapManager Instance { get; private set; }
     public Cell HoverCell { get; private set; }
 
+private Cell start;
+private Cell goal;
+public List<Cell> path;
+
     void Awake()
     {
         if (Instance == null)
@@ -34,13 +38,43 @@ public class MapManager : MonoBehaviour
                cell.Initialize(new Vector2Int(x, y));
                cells.Add(cell);
             }
+        start = null;
+        goal = null;
+        path = null;
     }
 
     void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
+            RaycastHit hit;
+            if (Physics.Raycast(
+                Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 25f, LayerMask.GetMask("Map")))
+            {
+                Vector2Int pos = new Vector2Int((int)hit.point.x, (int)hit.point.z);
+                if (IsPositionOnMap(pos))
+                {
+                    start = CellAt(pos);
+                }
+            }
         }
+
+        if (start != null)
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(
+                Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 25f, LayerMask.GetMask("Map")))
+            {
+                Vector2Int pos = new Vector2Int((int)hit.point.x, (int)hit.point.z);
+                if (IsPositionOnMap(pos))
+                {
+                    goal = CellAt(pos);
+                }
+            }
+            path = AStar.FindPath(start, goal);
+        }
+
+
         UpdateHoverCell();
         DrawMap();
     }
@@ -62,11 +96,13 @@ public class MapManager : MonoBehaviour
        {
            int x = Random.Range(0, width);
            int y = Random.Range(0, height);
-            agents[i].SnapTo(new Vector2Int(x, y));
-       } 
+           Cell cell = CellAt(x, y);
+           if (cell != null && cell.Walkable)
+                agents[i].SnapTo(new Vector2Int(x, y));
+       }
     }
 
-    public bool IsValidPosition(Vector2Int pos)
+    public bool IsPositionOnMap(Vector2Int pos)
     {
         return (pos.x >= 0 && pos.x < width
             && pos.y >= 0 && pos.y < height);
@@ -77,7 +113,7 @@ public class MapManager : MonoBehaviour
         if (cells == null)
             return null;
 
-        if (!IsValidPosition(pos))
+        if (!IsPositionOnMap(pos))
             return null;
 
         return cells[pos.x + pos.y * width];
@@ -98,7 +134,7 @@ public class MapManager : MonoBehaviour
             Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 25f, LayerMask.GetMask("Map")))
         {
             Vector2Int pos = new Vector2Int((int)hit.point.x, (int)hit.point.z);
-            if (IsValidPosition(pos))
+            if (IsPositionOnMap(pos))
             {
                 HoverCell = CellAt(pos);
                 // todo: hover must be true only for cell currently under mouse

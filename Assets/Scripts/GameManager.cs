@@ -39,33 +39,31 @@ public class GameManager : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            RaycastHit hit;
-            if (Physics.Raycast(
-                Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 25f, LayerMask.GetMask("Map")))
-            {
-                Vector2Int pos = new Vector2Int((int)hit.point.x, (int)hit.point.z);
-                if (MapManager.Instance.IsValidPosition(pos))
-                {
-                    if (Selection != null)
-                    {
-                        Selection.MoveTo(pos);
-                    }
-                    else
-                    {
-                        Selection = AgentAt(pos);
-                        Debug.Log(Selection);
-                    }
-                }
-            }
+            // RaycastHit hit;
+            // if (Physics.Raycast(
+            //     Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 25f, LayerMask.GetMask("Map")))
+            // {
+            //     Vector2Int pos = new Vector2Int((int)hit.point.x, (int)hit.point.z);
+            //     if (MapManager.Instance.IsPositionOnMap(pos))
+            //     {
+            //         if (Selection != null)
+            //         {
+            //             Selection.MoveTo(pos);
+            //         }
+            //         else
+            //         {
+            //             Selection = AgentAt(pos);
+            //             Debug.Log(Selection);
+            //         }
+            //     }
+            // }
         }
     }
 
     private Agent AgentAt(Vector2Int pos)
     {
-        Debug.Log(pos);
         for (int i = 0; i < agents.Count; ++i)
         {
-            Debug.Log(agents[i].Position);
             if (agents[i].Position == pos)
             {
                 return agents[i];
