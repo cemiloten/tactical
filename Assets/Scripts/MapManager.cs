@@ -12,11 +12,8 @@ public class MapManager : MonoBehaviour
     private List<Cell> cells;
 
     public static MapManager Instance { get; private set; }
-    public Cell HoverCell { get; private set; }
-
-private Cell start;
-private Cell goal;
-public List<Cell> path;
+    public Agent CurrentAgent { get; set; }
+    public List<Cell> VisualPath { get; set; }
 
     void Awake()
     {
@@ -29,66 +26,14 @@ public List<Cell> path;
 
     void Start()
     {
-        cells = new List<Cell>(width * height);
-        for (int y = 0; y < height; ++y)
-            for (int x = 0; x < width; ++x)
-            {
-               GameObject go = new GameObject(string.Format("Cell {0} - {1}", x, y));
-               Cell cell = go.AddComponent<Cell>();
-               cell.Initialize(new Vector2Int(x, y));
-               cells.Add(cell);
-            }
-        start = null;
-        goal = null;
-        path = null;
+        InstantiateCells();
     }
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            RaycastHit hit;
-            if (Physics.Raycast(
-                Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 25f, LayerMask.GetMask("Map")))
-            {
-                Vector2Int pos = new Vector2Int((int)hit.point.x, (int)hit.point.z);
-                if (IsPositionOnMap(pos))
-                {
-                    start = CellAt(pos);
-                }
-            }
-        }
-
-        if (start != null)
-        {
-            RaycastHit hit;
-            if (Physics.Raycast(
-                Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 25f, LayerMask.GetMask("Map")))
-            {
-                Vector2Int pos = new Vector2Int((int)hit.point.x, (int)hit.point.z);
-                if (IsPositionOnMap(pos))
-                {
-                    goal = CellAt(pos);
-                }
-            }
-            path = AStar.FindPath(start, goal);
-        }
-
-
-        UpdateHoverCell();
         DrawMap();
     }
 
-    public static Vector3 ToWorldPosition(Vector2Int pos, Transform transform = null)
-    {
-        float y = transform == null ? 0f : transform.position.y;
-        return new Vector3(pos.x + 0.5f, y, pos.y + 0.5f);
-    }
-
-    public static int Distance(Vector2Int start, Vector2Int end)
-    {
-        return (Mathf.Abs(end.x - start.x) + Mathf.Abs(end.y - start.y));
-    }
 
     public void PlaceAgents(List<Agent> agents)
     {
@@ -104,8 +49,7 @@ public List<Cell> path;
 
     public bool IsPositionOnMap(Vector2Int pos)
     {
-        return (pos.x >= 0 && pos.x < width
-            && pos.y >= 0 && pos.y < height);
+        return (pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height);
     }
 
     public Cell CellAt(Vector2Int pos)
@@ -124,22 +68,17 @@ public List<Cell> path;
         return CellAt(new Vector2Int(x, y));
     }
 
-    private void UpdateHoverCell()
+    private void InstantiateCells()
     {
-        if (!Camera.main)
-            return;
-
-        RaycastHit hit;
-        if (Physics.Raycast(
-            Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 25f, LayerMask.GetMask("Map")))
-        {
-            Vector2Int pos = new Vector2Int((int)hit.point.x, (int)hit.point.z);
-            if (IsPositionOnMap(pos))
+        cells = new List<Cell>(width * height);
+        for (int y = 0; y < height; ++y)
+            for (int x = 0; x < width; ++x)
             {
-                HoverCell = CellAt(pos);
-                // todo: hover must be true only for cell currently under mouse
+               GameObject go = new GameObject(string.Format("Cell {0} - {1}", x, y));
+               Cell cell = go.AddComponent<Cell>();
+               cell.Initialize(new Vector2Int(x, y));
+               cells.Add(cell);
             }
-       }
     }
 
     private void DrawMap()
@@ -158,5 +97,34 @@ public List<Cell> path;
                 Debug.DrawLine(start, start + heightLine);
             }
         }
+
+        UpdateCells();
     }
+
+    private void UpdateCells()
+    {
+        for (int i = 0; i < cells.Count; ++i)
+        {
+            if (VisualPath != null)
+                cells[i].Color = VisualPath.Contains(cells[i]) ? Color.green : Color.yellow;
+            else
+            {
+                cells[i].Color = Color.yellow;
+            }
+        }
+    }
+        
+    // public void DrawPath()
+    // {
+    //     if (CurrentAgent == null)
+    //     {
+    //         return;
+    //     }
+
+    //     if (CurrentAgent.Path == null)
+    //     {
+    //         Debug.LogError("Cannot draw null path from {CurrentAgent}");
+    //         return;
+    //     }
+    // }
 }

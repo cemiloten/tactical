@@ -1,1 +1,3 @@
+// select agent
+// when agent selected, show a* to mouse pos
 implement agent movement from path

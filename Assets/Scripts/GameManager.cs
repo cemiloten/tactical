@@ -7,22 +7,22 @@ public class GameManager : MonoBehaviour
     public List<GameObject> agentsPrefabs;
     private List<Agent> agents;
 
-    public Agent Selection { get; private set; }
+    private Agent _selection;
+    public Agent Selection
+    {
+        get { return _selection; }
+        private set
+        {
+            _selection = value ?? null;
+            MapManager.Instance.CurrentAgent = _selection;
+        }
+    }
+
 
     void Start()
     {
         agents = new List<Agent>(agentsPrefabs.Count);
-        for (int i = 0; i < agentsPrefabs.Count; ++i)
-        {
-            GameObject go = Instantiate(agentsPrefabs[i]) as GameObject;
-            Agent agent = go.GetComponent<Agent>();
-            if (agent == null)
-            {
-                agent = go.AddComponent<Agent>();
-            }
-            agents.Add(agent);
-        }
-
+        CreateAgents();
         MapManager.Instance.PlaceAgents(agents);
         Selection = null;
     }
@@ -37,26 +37,49 @@ public class GameManager : MonoBehaviour
             Selection = null;
         }
 
+        Vector2Int mousePos;
+        Utilities.MousePos(out mousePos);
+
         if (Input.GetMouseButtonDown(0))
         {
-            // RaycastHit hit;
-            // if (Physics.Raycast(
-            //     Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 25f, LayerMask.GetMask("Map")))
-            // {
-            //     Vector2Int pos = new Vector2Int((int)hit.point.x, (int)hit.point.z);
-            //     if (MapManager.Instance.IsPositionOnMap(pos))
-            //     {
-            //         if (Selection != null)
-            //         {
-            //             Selection.MoveTo(pos);
-            //         }
-            //         else
-            //         {
-            //             Selection = AgentAt(pos);
-            //             Debug.Log(Selection);
-            //         }
-            //     }
-            // }
+            if (MapManager.Instance.IsPositionOnMap(mousePos)
+                && SelectionIsEmpty())
+            {
+                Selection = AgentAt(mousePos);
+            }
+        }
+
+        if (!SelectionIsEmpty())
+        {
+            if (MapManager.Instance.IsPositionOnMap(mousePos)
+                && mousePos != Selection.Position)
+            {
+
+                if (!Selection.IsMoving)
+                    MapManager.Instance.VisualPath = AStar.FindPath(
+                        MapManager.Instance.CellAt(Selection.Position),
+                        MapManager.Instance.CellAt(mousePos));
+
+                if (Input.GetMouseButtonDown(0))
+                {
+                    Selection.MoveTo(mousePos);
+                    MapManager.Instance.VisualPath = null;
+                }
+            }
+        }
+    }
+
+    private void CreateAgents()
+    {
+        for (int i = 0; i < agentsPrefabs.Count; ++i)
+        {
+            GameObject go = Instantiate(agentsPrefabs[i]) as GameObject;
+            Agent agent = go.GetComponent<Agent>();
+            if (agent == null)
+            {
+                agent = go.AddComponent<Agent>();
+            }
+            agents.Add(agent);
         }
     }
 

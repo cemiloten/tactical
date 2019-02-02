@@ -43,11 +43,6 @@ public static class AStar
 
     public static List<Cell> FindPath(Cell _start, Cell _goal)
     {
-        if (!_start.Walkable)
-        {
-            Debug.LogError("Cannot start path from non walkable cell");
-            return null;
-        }
         if (!_goal.Walkable)
         {
             Debug.LogError("Cannot find path to non walkable cell");

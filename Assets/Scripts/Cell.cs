@@ -14,27 +14,21 @@ public class Cell : MonoBehaviour
 
     public Vector2Int Position { get; private set; }
     public State CurrentState { get; set; }
-    public bool Hover { get; set; }
     public bool Walkable { get { return CurrentState == State.Empty; } }
+    public Color Color { get; set; }
 
     public void Initialize(Vector2Int pos, State state = State.Empty)
     {
         Position = pos;
         CurrentState = state;
-        gameObject.transform.position = MapManager.ToWorldPosition(pos);
+        gameObject.transform.position = Utilities.ToWorldPosition(pos);
+        Color = Color.yellow;
     }
 
 
     void OnDrawGizmos()
     {
-        // Gizmos.color = MapManager.Instance.HoverCell == this ? Color.blue : Color.yellow;
-        Gizmos.color = Color.yellow;
-        if (MapManager.Instance.path != null)
-        {
-            if (MapManager.Instance.path.Contains(this))
-                Gizmos.color = Color.green;
-        }
-
+        Gizmos.color = Color;
         Gizmos.DrawCube(transform.position, new Vector3(0.95f, 0.01f, 0.95f));
     }
 
