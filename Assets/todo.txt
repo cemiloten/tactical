@@ -1,3 +1,5 @@
-// select agent
-// when agent selected, show a* to mouse pos
-implement agent movement from path
+// movement is broken after first move
+highlight current turn
+implement simple ai that goes towards the player
+    make sure that the ai agent "ends" his turn after one movement
+think about gameplay

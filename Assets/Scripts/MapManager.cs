@@ -12,7 +12,6 @@ public class MapManager : MonoBehaviour
     private List<Cell> cells;
 
     public static MapManager Instance { get; private set; }
-    public Agent CurrentAgent { get; set; }
     public List<Cell> VisualPath { get; set; }
 
     void Awake()
@@ -32,8 +31,8 @@ public class MapManager : MonoBehaviour
     void Update()
     {
         DrawMap();
+        UpdateCells();
     }
-
 
     public void PlaceAgents(List<Agent> agents)
     {
@@ -97,34 +96,16 @@ public class MapManager : MonoBehaviour
                 Debug.DrawLine(start, start + heightLine);
             }
         }
-
-        UpdateCells();
     }
 
     private void UpdateCells()
     {
         for (int i = 0; i < cells.Count; ++i)
         {
-            if (VisualPath != null)
-                cells[i].Color = VisualPath.Contains(cells[i]) ? Color.green : Color.yellow;
+            if (VisualPath != null && VisualPath.Contains(cells[i]))
+                cells[i].Color = Color.green;
             else
-            {
                 cells[i].Color = Color.yellow;
-            }
         }
     }
-        
-    // public void DrawPath()
-    // {
-    //     if (CurrentAgent == null)
-    //     {
-    //         return;
-    //     }
-
-    //     if (CurrentAgent.Path == null)
-    //     {
-    //         Debug.LogError("Cannot draw null path from {CurrentAgent}");
-    //         return;
-    //     }
-    // }
 }

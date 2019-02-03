@@ -5,6 +5,5 @@ using UnityEngine;
 [CreateAssetMenu(fileName="Agent Properties", menuName="Tactical/Agent Properties")]
 public class AgentProperties : ScriptableObject
 {
-    public int health;
-    public int movement;
+    public int maxMovement;
 }

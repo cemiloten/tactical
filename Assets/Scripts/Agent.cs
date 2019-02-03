@@ -4,21 +4,23 @@ using UnityEngine;
 
 public class Agent : MonoBehaviour
 {
-    private Cell cell = null;
-    private int movementPoints = 99;
+    public AgentProperties properties;
 
+    private Cell cell = null;
     private int pathIndex = 0;
-    private float movementSpeed = 2f;
-    private float epsilon = 0.05f;
+    private float movementSpeed = 3f;
+    private float epsilon = 0.1f;
 
     public List<Cell> Path { get; set; }
-    public Vector2Int Position { get; private set; }
     public bool IsMoving { get; set; } 
+    public Vector2Int Position { get; private set; }
+    public int MovementPoints { get; private set; }
 
 
     void Start()
     {
         IsMoving = false;
+        MovementPoints = 5;
     }
 
     void Update()
@@ -33,17 +35,17 @@ public class Agent : MonoBehaviour
            MoveToNextCell();
        }
     }
-
+    
     private void MoveToNextCell()
     {
-        if (pathIndex == Path.Count - 1)
+        if (pathIndex >= Path.Count)
         {
             FinishedMoving();
             return;
         }
 
-        Cell next = Path[pathIndex + 1];
         // todo: use mathf.sin to know direction
+        Cell next = Path[pathIndex];
 
         if (transform.position.x < next.Position.x + 0.5f - epsilon)
         {
@@ -65,50 +67,23 @@ public class Agent : MonoBehaviour
         {
             ++pathIndex;
         }
-
     }
 
-    public bool CanMoveTo(Vector2Int pos)
-    {
-        if (pos.x < 0 || pos.y < 0)
-            return false;
-
-        Cell cell = MapManager.Instance.CellAt(pos);
-        if (cell == null)
-            return false;
-
-        return (cell.Walkable
-            && movementPoints >= Utilities.Distance(Position, pos));
-    }
-
-    public void MoveTo(Vector2Int pos)
+    public void Move(List<Cell> path)
     {
         if (IsMoving)
         {
             Debug.LogError("Cannot accept new move while already moving");
             return;
         }
-
-        if (!CanMoveTo(pos))
-        {
-            Debug.LogErrorFormat("Cannot move from {0} to {1}", Position, pos);
-            return;
-        }
-
-        if (cell)
-            cell.CurrentState = Cell.State.Empty;
-
-        if (Path == null)
-        {
-            Cell goal = MapManager.Instance.CellAt(pos);
-            Path = AStar.FindPath(cell, goal);
-        }
-
+        Path = path;
         StartMoving();
     }
 
     private void StartMoving()
     {
+        if (cell)
+            cell.CurrentState = Cell.State.Empty;
         IsMoving = true;
         pathIndex = 0;
     }
@@ -116,8 +91,12 @@ public class Agent : MonoBehaviour
     private void FinishedMoving()
     {
         IsMoving = false;
+        Path = null;
         pathIndex = 0;
         Position = Utilities.ToMapPosition(transform.position);
+        transform.position = Utilities.ToWorldPosition(Position, transform);
+        cell = MapManager.Instance.CellAt(Position);
+        cell.CurrentState = Cell.State.Agent;
     }
 
     public void SnapTo(Vector2Int pos)

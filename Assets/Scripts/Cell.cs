@@ -15,6 +15,7 @@ public class Cell : MonoBehaviour
     public Vector2Int Position { get; private set; }
     public State CurrentState { get; set; }
     public bool Walkable { get { return CurrentState == State.Empty; } }
+    public bool Selected { get; set; }
     public Color Color { get; set; }
 
     public void Initialize(Vector2Int pos, State state = State.Empty)
@@ -28,6 +29,8 @@ public class Cell : MonoBehaviour
 
     void OnDrawGizmos()
     {
+        if (Selected)
+            Color = Color.blue;
         Gizmos.color = Color;
         Gizmos.DrawCube(transform.position, new Vector3(0.95f, 0.01f, 0.95f));
     }
