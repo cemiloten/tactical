@@ -1,5 +1,20 @@
-// movement is broken after first move
-highlight current turn
-implement simple ai that goes towards the player
-    make sure that the ai agent "ends" his turn after one movement
-think about gameplay
+commit:
+    fixed bugs
+    refactoring
+    started adding support for abilities
+
+
+game manager should only says which turn it is and whose turn it is to play. actions are handled by each agent
+highlight currently playing agent
+
+
+
+Gameplay:
+    3/4 characters per team
+    "capture" an enemy agent to win
+
+Mover:
+    can push/pull agents (enemy or ally)
+
+Switcher:
+    switches places with agents (enemy or ally)

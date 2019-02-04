@@ -11,11 +11,9 @@ public class Cell : MonoBehaviour
         Obstacle = 2
     }
 
-
     public Vector2Int Position { get; private set; }
     public State CurrentState { get; set; }
     public bool Walkable { get { return CurrentState == State.Empty; } }
-    public bool Selected { get; set; }
     public Color Color { get; set; }
 
     public void Initialize(Vector2Int pos, State state = State.Empty)
@@ -26,23 +24,21 @@ public class Cell : MonoBehaviour
         Color = Color.yellow;
     }
 
-
     void OnDrawGizmos()
     {
-        if (Selected)
-            Color = Color.blue;
         Gizmos.color = Color;
         Gizmos.DrawCube(transform.position, new Vector3(0.95f, 0.01f, 0.95f));
     }
+
 
     public override bool Equals(object obj)
     {
         if (obj == null || GetType() != obj.GetType())
             return false;
-        Cell other = (Cell)obj; 
+        Cell other = (Cell)obj;
         return Position == other.Position && CurrentState == other.CurrentState;
     }
-    
+
     public override int GetHashCode()
     {
         return base.GetHashCode();

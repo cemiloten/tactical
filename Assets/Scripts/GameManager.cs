@@ -7,59 +7,35 @@ public class GameManager : MonoBehaviour
 {
     public Text currentTurn;
     public Text currentSelection;
-    public Button endTurn;
-    public GameObject playerPrefab;
-    public GameObject currentAgentCircle;
     public List<GameObject> agentsPrefabs;
 
-    private Agent player;
     private List<Agent> agents;
     private int nextAgentIndex = 0;
 
     public Agent Selection { get; private set; }
+    public static GameManager Instance { get; private set; }
 
+    void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+        else
+            if (Instance != this)
+            Destroy(this);
+    }
 
     void Start()
     {
-        endTurn.onClick.AddListener(EndTurn);
-
         InstantiateAgents();
         MapManager.Instance.PlaceAgents(agents);
-        Selection = player;
-
-        // Player always starts first
-        for (int i = 0; i < agents.Count; ++i)
-        {
-            if (agents[i] == player)
-            {
-                nextAgentIndex = i;
-                break;
-            }
-        }
+        Selection = agents[nextAgentIndex];
     }
 
     void Update()
     {
         currentTurn.text = string.Format("Turn {0}", nextAgentIndex / agents.Count);
         currentSelection.text = string.Format("{0}\n {1}", Selection, Selection.Position);
-
-        if (Selection != player)
-        {
-            // Simple AI that goes towards player
-            if (!Selection.IsMoving)
-            {
-                List<Cell> path = AStar.FindPathToNearestNeighbour(
-                    MapManager.Instance.CellAt(Selection.Position),
-                    MapManager.Instance.CellAt(player.Position));
-                
-                if (path != null)
-                    Selection.Move(path);
-                
-                // todo: make sure ai agent ends its turn
-                // EndTurn();
-            }
-            return;
-        }
+        currentSelection.text = Selection.CurrentAbility.ToString();
 
         Vector2Int mousePos;
         if (!Utilities.MousePos(out mousePos))
@@ -74,15 +50,10 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            Debug.Log("Pressed tab, ending turn");
-            EndTurn();
-        }
-
         if (Selection.IsMoving
             || !MapManager.Instance.IsPositionOnMap(mousePos)
-            || mousePos == Selection.Position)
+            || mousePos == Selection.Position
+            || Selection.CurrentAbility >= 0)
         {
             MapManager.Instance.VisualPath = null;
         }
@@ -96,33 +67,42 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public Agent AgentAt(Cell cell)
+    {
+        for (int i = 0; i < agents.Count; ++i)
+        {
+            if (MapManager.Instance.CellAt(cell.Position) == cell
+                && cell.Position == agents[i].Position)
+            {
+                return agents[i];
+            }
+        }
+        return null;
+    }
+
     private Agent NextAgent()
     {
         ++nextAgentIndex;
         return agents[nextAgentIndex % agents.Count];
     }
 
-    private void EndTurn()
+    public void SetCurrentAbility(int index)
+    {
+        if (index < 0 || index > Selection.Abilities.Length - 1)
+            return;
+
+        Selection.CurrentAbility = Selection.CurrentAbility == index ? -1 : index;
+    }
+
+    public void EndTurn()
     {
         Selection = NextAgent();
         MapManager.Instance.VisualPath = null;
     }
 
-    private Agent InstantiatePlayer()
-    {
-        GameObject go = Instantiate(playerPrefab) as GameObject;
-        Agent player = go.GetComponent<Agent>();
-        if (player == null)
-            player = go.AddComponent<Agent>();
-        return player;
-    }
-
     private void InstantiateAgents()
     {
         agents = new List<Agent>(agentsPrefabs.Count);
-        player = InstantiatePlayer();
-        agents.Add(player);
-
         for (int i = 0; i < agentsPrefabs.Count; ++i)
         {
             GameObject go = Instantiate(agentsPrefabs[i]) as GameObject;

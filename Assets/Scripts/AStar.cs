@@ -43,6 +43,17 @@ public static class AStar
 
     public static List<Cell> FindPathToNearestNeighbour(Cell _start, Cell _goal)
     {
+        if (_start == null)
+        {
+            Debug.LogError("{_start} is null");
+            return null;
+        }
+        if (_goal == null)
+        {
+            Debug.LogError("{_goal} is null");
+            return null;
+        }
+
         Node start = new Node(_start);
         Node goal = new Node(_goal);
         List<Node> neighbours = GetNeighbours(goal);
@@ -50,29 +61,31 @@ public static class AStar
         Node nearest = null;
         for (int n = 0; n < neighbours.Count; ++n)
         {
-            if (neighbours[n] != null)
+            if (neighbours[n] != null && neighbours[n].cell != null)
             {
                 nearest = neighbours[n];
                 break;
             }
         }
         if (nearest == null)
-            // Every neighbour is null
+            // Every neighbour of target is null
             return null;
 
         // Compare distance to other non null neighbours
         for (int n = 0; n < neighbours.Count; ++n)
         {
-            if (neighbours[n] == null)
-                continue;
-            if (neighbours[n].cell != null
+            if (neighbours[n] != null
+                && neighbours[n].cell != null
                 && neighbours[n].cell.Walkable
                 && CalculateHeuristic(start, neighbours[n]) < CalculateHeuristic(start, nearest))
             {
                 nearest = neighbours[n];
             }
         }
-        return nearest == null ? null : FindPath(_start, nearest.cell);
+
+        if (nearest == null)
+            return null;
+        return FindPath(_start, nearest.cell);
     }
 
     public static List<Cell> FindPath(Cell _start, Cell _goal)
@@ -83,7 +96,6 @@ public static class AStar
         }
         if (!_goal.Walkable)
         {
-            Debug.LogWarning("Cannot find path to non walkable cell");
             return null;
         }
         MapManager manager = MapManager.Instance;
@@ -107,7 +119,7 @@ public static class AStar
                 }
             }
             open.RemoveAt(current_index);
-            closed.Add(current); 
+            closed.Add(current);
 
             if (current.Equals(goal))
                 return InvertedPathFrom(current);
@@ -116,11 +128,11 @@ public static class AStar
             for (int n = 0; n < neighbours.Count; ++n)
             {
                 Node neighbour = neighbours[n];
-                if (neighbour.cell == null || closed.Contains(neighbour))
+                if (neighbour == null || neighbour.cell == null || closed.Contains(neighbour))
                     continue;
-                if (!neighbour.cell.Walkable)                
+                if (!neighbour.cell.Walkable)
                     continue;
-                
+
                 neighbour.g = current.g + 1;
                 neighbour.h = CalculateHeuristic(neighbour, goal);
                 neighbour.f = neighbour.g + neighbour.h;
@@ -179,8 +191,8 @@ public static class AStar
 
     private static int CalculateHeuristic(Node node, Node goal)
     {
-        int x = goal.cell.Position.x - node.cell.Position.x;  
-        int y = goal.cell.Position.y - node.cell.Position.y;  
-        return (x * x + y * y); 
+        int x = goal.cell.Position.x - node.cell.Position.x;
+        int y = goal.cell.Position.y - node.cell.Position.y;
+        return (x * x + y * y);
     }
 }

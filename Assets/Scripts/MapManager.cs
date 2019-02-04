@@ -20,7 +20,7 @@ public class MapManager : MonoBehaviour
             Instance = this;
         else
             if (Instance != this)
-                Destroy(this);
+            Destroy(this);
     }
 
     void Start()
@@ -36,19 +36,55 @@ public class MapManager : MonoBehaviour
 
     public void PlaceAgents(List<Agent> agents)
     {
-       for (int i = 0; i < agents.Count; ++i)
-       {
-           int x = Random.Range(0, width);
-           int y = Random.Range(0, height);
-           Cell cell = CellAt(x, y);
-           if (cell != null && cell.Walkable)
-                agents[i].SnapTo(new Vector2Int(x, y));
-       }
+        for (int i = 0; i < agents.Count; ++i)
+        {
+            bool found = false;
+            for (int j = 0; j < cells.Count; ++j)
+            {
+                Vector2Int pos = new Vector2Int(
+                    Random.Range(0, width),
+                    Random.Range(0, height));
+
+                Cell cell = CellAt(pos);
+                if (cell != null && cell.Walkable)
+                {
+                    found = true;
+                    agents[i].SnapTo(pos);
+                    break;
+                }
+            }
+            if (!found)
+            {
+                Debug.LogError("No free cell to place agent to");
+                return;
+            }
+        }
     }
 
     public bool IsPositionOnMap(Vector2Int pos)
     {
         return (pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height);
+    }
+
+    public bool AreNeighbours(Cell c1, Cell c2)
+    {
+        if (c1 == null || c2 == null)
+        {
+            Debug.LogError("{c1} or {c2} is null");
+            return false;
+        }
+        if (!IsPositionOnMap(c1.Position) || !IsPositionOnMap(c2.Position))
+        {
+            Debug.LogError("{c1} or {c2} is not a position on the map");
+            return false;
+        }
+        List<Cell> neighbours = GetNeighbours(c1);
+        for (int i = 0; i < neighbours.Count; ++i)
+        {
+            if (neighbours[i] != null && neighbours[i] == c2)
+                return true;
+        }
+        return false;
     }
 
     public Cell CellAt(Vector2Int pos)
@@ -67,16 +103,28 @@ public class MapManager : MonoBehaviour
         return CellAt(new Vector2Int(x, y));
     }
 
+    private List<Cell> GetNeighbours(Cell cell)
+    {
+        MapManager mng = MapManager.Instance;
+        return new List<Cell>()
+        {
+            CellAt(cell.Position.x + 1, cell.Position.y), // right
+            CellAt(cell.Position.x, cell.Position.y + 1), // top
+            CellAt(cell.Position.x - 1, cell.Position.y), // left
+            CellAt(cell.Position.x, cell.Position.y - 1)  // bottom
+        };
+    }
+
     private void InstantiateCells()
     {
         cells = new List<Cell>(width * height);
         for (int y = 0; y < height; ++y)
             for (int x = 0; x < width; ++x)
             {
-               GameObject go = new GameObject(string.Format("Cell {0} - {1}", x, y));
-               Cell cell = go.AddComponent<Cell>();
-               cell.Initialize(new Vector2Int(x, y));
-               cells.Add(cell);
+                GameObject go = new GameObject(string.Format("Cell {0} - {1}", x, y));
+                Cell cell = go.AddComponent<Cell>();
+                cell.Initialize(new Vector2Int(x, y));
+                cells.Add(cell);
             }
     }
 

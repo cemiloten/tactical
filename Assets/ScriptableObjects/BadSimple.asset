@@ -13,3 +13,5 @@ MonoBehaviour:
   m_Name: BadSimple
   m_EditorClassIdentifier: 
   maxMovement: 2
+  abilities:
+  - {fileID: 0}
