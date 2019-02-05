@@ -6,6 +6,5 @@ using UnityEngine;
 public class AgentProperties : ScriptableObject
 {
     public int maxMovement;
-
-    public Ability[] abilities;
+    public Ability ability;
 }

@@ -6,6 +6,11 @@ public class Pull : Ability
 {
     public int power;
 
+    private void Start()
+    {
+        Type = Ability.CastType.Action;
+    }
+
     public override void Cast(Cell source, Cell target)
     {
         if (source == null)
@@ -42,6 +47,6 @@ public class Pull : Ability
 
         List<Cell> path = AStar.FindPathToNearestNeighbour(target, source);
         Agent agent = GameManager.Instance.AgentAt(target);
-        agent.Move(path);
+        // agent.Move(path);
     }
 }

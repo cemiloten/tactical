@@ -6,6 +6,11 @@ public class Push : Ability
 {
     public int power = 3;
 
+    private void Start()
+    {
+        Type = Ability.CastType.Action;
+    }
+
     public override void Cast(Cell source, Cell target)
     {
         if (source == null)
@@ -51,6 +56,6 @@ public class Push : Ability
                 break;
             path.Add(cell);
         }
-        targetAgent.Move(path);
+        // targetAgent.Move(path);
     }
 }

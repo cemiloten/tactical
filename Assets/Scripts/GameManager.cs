@@ -7,10 +7,16 @@ public class GameManager : MonoBehaviour
 {
     public Text currentTurn;
     public Text currentSelection;
+    public Button moveButton;
+    public Button actionButton;
+    public Material red;
+    public Material blue;
     public List<GameObject> agentsPrefabs;
 
-    private List<Agent> agents;
+    private int playerCount = 2;
+    private int currentPlayer = 0;
     private int nextAgentIndex = 0;
+    private List<Agent> agents;
 
     public Agent Selection { get; private set; }
     public static GameManager Instance { get; private set; }
@@ -26,6 +32,8 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        moveButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Move); });
+        actionButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Action); });
         InstantiateAgents();
         MapManager.Instance.PlaceAgents(agents);
         Selection = agents[nextAgentIndex];
@@ -35,36 +43,36 @@ public class GameManager : MonoBehaviour
     {
         currentTurn.text = string.Format("Turn {0}", nextAgentIndex / agents.Count);
         currentSelection.text = string.Format("{0}\n {1}", Selection, Selection.Position);
-        currentSelection.text = Selection.CurrentAbility.ToString();
 
         Vector2Int mousePos;
-        if (!Utilities.MousePos(out mousePos))
-            return;
+        Utilities.MousePos(out mousePos);
 
-        if (Input.GetMouseButtonDown(0) && MapManager.Instance.IsPositionOnMap(mousePos))
+        if (Input.GetKeyDown(KeyCode.Tab))
         {
-            if (MapManager.Instance.VisualPath != null
-                && mousePos == MapManager.Instance.VisualPath[MapManager.Instance.VisualPath.Count - 1].Position)
-            {
-                Selection.Move(MapManager.Instance.VisualPath);
-            }
+            Selection = NextAgent();
         }
+    }
 
-        if (Selection.IsMoving
-            || !MapManager.Instance.IsPositionOnMap(mousePos)
-            || mousePos == Selection.Position
-            || Selection.CurrentAbility >= 0)
-        {
-            MapManager.Instance.VisualPath = null;
-        }
-        else
-        {
-            List<Cell> path = AStar.FindPath(
-                MapManager.Instance.CellAt(Selection.Position),
-                MapManager.Instance.CellAt(mousePos));
-            if (path != null && path.Count <= Selection.MovementPoints)
-                MapManager.Instance.VisualPath = path;
-        }
+    public void SetCurrentAbility(Ability.CastType type)
+    {
+        // todo
+        // if (index == Selection.CurrentAbility)
+        //     index = -1;
+        // Selection.SetCurrentAbility(index);
+    }
+
+    private Agent NextAgent()
+    {
+        nextAgentIndex = (nextAgentIndex + 1) % playerCount;
+        return agents[currentPlayer * agentsPrefabs.Count + nextAgentIndex];
+    }
+
+    public void EndTurn()
+    {
+        MapManager.Instance.VisualPath = null;
+        currentPlayer = (currentPlayer + 1) % playerCount;
+        nextAgentIndex = currentPlayer * agentsPrefabs.Count;
+        Selection = agents[nextAgentIndex];
     }
 
     public Agent AgentAt(Cell cell)
@@ -80,50 +88,15 @@ public class GameManager : MonoBehaviour
         return null;
     }
 
-    private Agent NextAgent()
-    {
-        ++nextAgentIndex;
-        return agents[nextAgentIndex % agents.Count];
-    }
-
-    public void SetCurrentAbility(int index)
-    {
-        if (index < 0 || index > Selection.Abilities.Length - 1)
-            return;
-
-        Selection.CurrentAbility = Selection.CurrentAbility == index ? -1 : index;
-    }
-
-    public void EndTurn()
-    {
-        Selection = NextAgent();
-        MapManager.Instance.VisualPath = null;
-    }
-
     private void InstantiateAgents()
     {
-        agents = new List<Agent>(agentsPrefabs.Count);
-        for (int i = 0; i < agentsPrefabs.Count; ++i)
+        agents = new List<Agent>(playerCount * agentsPrefabs.Count);
+        for (int i = 0; i < playerCount * agentsPrefabs.Count; ++i)
         {
-            GameObject go = Instantiate(agentsPrefabs[i]) as GameObject;
+            GameObject go = Instantiate(agentsPrefabs[i % playerCount]) as GameObject;
+            go.GetComponent<Renderer>().sharedMaterial = i < 2 ? red : blue;
             Agent agent = go.GetComponent<Agent>();
-            if (agent == null)
-            {
-                agent = go.AddComponent<Agent>();
-            }
             agents.Add(agent);
         }
-    }
-
-    private Agent AgentAt(Vector2Int pos)
-    {
-        for (int i = 0; i < agents.Count; ++i)
-        {
-            if (agents[i].Position == pos)
-            {
-                return agents[i];
-            }
-        }
-        return null;
     }
 }

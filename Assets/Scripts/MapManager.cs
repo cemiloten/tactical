@@ -9,7 +9,7 @@ public class MapManager : MonoBehaviour
     public float tileSize = 1.0f;
     public float tileOffset = 0.5f;
 
-    private List<Cell> cells;
+    private Cell[] cells;
 
     public static MapManager Instance { get; private set; }
     public List<Cell> VisualPath { get; set; }
@@ -25,6 +25,7 @@ public class MapManager : MonoBehaviour
 
     void Start()
     {
+        VisualPath = new List<Cell>();
         InstantiateCells();
     }
 
@@ -39,7 +40,7 @@ public class MapManager : MonoBehaviour
         for (int i = 0; i < agents.Count; ++i)
         {
             bool found = false;
-            for (int j = 0; j < cells.Count; ++j)
+            for (int j = 0; j < cells.Length; ++j)
             {
                 Vector2Int pos = new Vector2Int(
                     Random.Range(0, width),
@@ -105,7 +106,6 @@ public class MapManager : MonoBehaviour
 
     private List<Cell> GetNeighbours(Cell cell)
     {
-        MapManager mng = MapManager.Instance;
         return new List<Cell>()
         {
             CellAt(cell.Position.x + 1, cell.Position.y), // right
@@ -115,16 +115,48 @@ public class MapManager : MonoBehaviour
         };
     }
 
+    public List<Cell> GetCastRange(Cell source, int range = 1, bool withSource = false)
+    {
+        if (source == null)
+        {
+            Debug.LogError("{source} is null");
+            return null;
+        }
+
+        if (range < 0)
+        {
+            Debug.LogError("{range} cannot be inferior to 0");
+            return null;
+        }
+
+        if (range == 0)
+            return new List<Cell>() { source };
+
+        List<Cell> cellsInRange = new List<Cell>();
+        for (int i = -range; i <= range; ++i)
+        {
+            Vector2Int pos = new Vector2Int(source.Position.x, source.Position.y + i);
+            int amount = range - Mathf.Abs(i);
+            for (int j = -amount; j <= amount; ++j)
+            {
+                Cell cell = MapManager.Instance.CellAt(new Vector2Int(pos.x + j, pos.y));
+                if (cell != null)// && (!withSource && cell != source))
+                    cellsInRange.Add(cell);
+            }
+        }
+        return cellsInRange;
+    }
+
     private void InstantiateCells()
     {
-        cells = new List<Cell>(width * height);
+        cells = new Cell[width * height];
         for (int y = 0; y < height; ++y)
             for (int x = 0; x < width; ++x)
             {
-                GameObject go = new GameObject(string.Format("Cell {0} - {1}", x, y));
+                GameObject go = new GameObject(string.Format("Cell ({0}, {1})", x, y));
                 Cell cell = go.AddComponent<Cell>();
                 cell.Initialize(new Vector2Int(x, y));
-                cells.Add(cell);
+                cells[x + y * width] = cell;
             }
     }
 
@@ -148,7 +180,19 @@ public class MapManager : MonoBehaviour
 
     private void UpdateCells()
     {
-        for (int i = 0; i < cells.Count; ++i)
+        Agent agent = GameManager.Instance.Selection;
+        if (agent == null)
+            return;
+        // if (agent.CurrentAbility < 0)
+        //     VisualPath = null;
+        // else
+        // {
+        //     VisualPath = GetCastRange(
+        //         MapManager.Instance.CellAt(agent.Position),
+        //         agent.CurrentAbility.range);
+        // }
+
+        for (int i = 0; i < cells.Length; ++i)
         {
             if (VisualPath != null && VisualPath.Contains(cells[i]))
                 cells[i].Color = Color.green;

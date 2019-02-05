@@ -1,16 +1,13 @@
 commit:
-    fixed bugs
-    refactoring
-    started adding support for abilities
 
 
+select current ability with screen button
 game manager should only says which turn it is and whose turn it is to play. actions are handled by each agent
 highlight currently playing agent
 
 
-
 Gameplay:
-    3/4 characters per team
+    2/3/4 characters per team
     "capture" an enemy agent to win
 
 Mover:
