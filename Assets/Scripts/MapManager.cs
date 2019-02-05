@@ -74,11 +74,13 @@ public class MapManager : MonoBehaviour
             Debug.LogError("{c1} or {c2} is null");
             return false;
         }
+
         if (!IsPositionOnMap(c1.Position) || !IsPositionOnMap(c2.Position))
         {
             Debug.LogError("{c1} or {c2} is not a position on the map");
             return false;
         }
+
         List<Cell> neighbours = GetNeighbours(c1);
         for (int i = 0; i < neighbours.Count; ++i)
         {
@@ -140,8 +142,12 @@ public class MapManager : MonoBehaviour
             for (int j = -amount; j <= amount; ++j)
             {
                 Cell cell = MapManager.Instance.CellAt(new Vector2Int(pos.x + j, pos.y));
-                if (cell != null)// && (!withSource && cell != source))
+                if (cell != null && cell.Walkable)
+                {
+                    if (cell == source && !withSource)
+                        continue;
                     cellsInRange.Add(cell);
+                }
             }
         }
         return cellsInRange;
@@ -183,14 +189,17 @@ public class MapManager : MonoBehaviour
         Agent agent = GameManager.Instance.Selection;
         if (agent == null)
             return;
-        // if (agent.CurrentAbility < 0)
-        //     VisualPath = null;
-        // else
-        // {
-        //     VisualPath = GetCastRange(
-        //         MapManager.Instance.CellAt(agent.Position),
-        //         agent.CurrentAbility.range);
-        // }
+        if (agent.CurrentAbility == null
+            || agent.CurrentAbility.Type == Ability.CastType.None)
+        {
+            VisualPath = null;
+        }
+        else
+        {
+            VisualPath = GetCastRange(
+                MapManager.Instance.CellAt(agent.Position),
+                agent.CurrentAbility.range);
+        }
 
         for (int i = 0; i < cells.Length; ++i)
         {

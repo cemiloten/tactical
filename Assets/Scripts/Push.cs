@@ -6,7 +6,7 @@ public class Push : Ability
 {
     public int power = 3;
 
-    private void Start()
+    private void Awake()
     {
         Type = Ability.CastType.Action;
     }

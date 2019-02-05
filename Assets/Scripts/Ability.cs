@@ -6,6 +6,7 @@ public abstract class Ability : MonoBehaviour
 {
     public enum CastType
     {
+        None,
         Move,
         Action
     }
@@ -17,7 +18,7 @@ public abstract class Ability : MonoBehaviour
 
     public abstract void Cast(Cell source, Cell target);
 
-    private void Start()
+    private void Awake()
     {
         Casting = false;
     }

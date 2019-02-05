@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657838, g: 0.49641234, b: 0.57481676, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1086,8 +1086,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentTurn: {fileID: 1838139055}
   currentSelection: {fileID: 610008769}
-  moveButton: {fileID: 0}
-  actionButton: {fileID: 0}
+  moveButton: {fileID: 667690284}
+  actionButton: {fileID: 1751618837}
   red: {fileID: 2100000, guid: d644c013738374e93a6cc02132da7880, type: 2}
   blue: {fileID: 2100000, guid: 01780c0c48f4f49839adbf379ddcc6a3, type: 2}
   agentsPrefabs:

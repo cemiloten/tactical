@@ -42,7 +42,7 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         currentTurn.text = string.Format("Turn {0}", nextAgentIndex / agents.Count);
-        currentSelection.text = string.Format("{0}\n {1}", Selection, Selection.Position);
+        currentSelection.text = string.Format("{0}\n {1}", Selection, Selection.CurrentAbility?.Type);
 
         Vector2Int mousePos;
         Utilities.MousePos(out mousePos);
@@ -51,14 +51,28 @@ public class GameManager : MonoBehaviour
         {
             Selection = NextAgent();
         }
+
+        if (Input.GetMouseButtonDown(0)
+            && MapManager.Instance.IsPositionOnMap(mousePos)
+            && Selection != null
+            && Selection.CurrentAbility != null
+            && Selection.CurrentAbility.Type != Ability.CastType.None)
+        {
+            Selection.CurrentAbility.Cast(
+                MapManager.Instance.CellAt(Selection.Position),
+                MapManager.Instance.CellAt(mousePos));
+        }
     }
 
     public void SetCurrentAbility(Ability.CastType type)
     {
-        // todo
-        // if (index == Selection.CurrentAbility)
-        //     index = -1;
-        // Selection.SetCurrentAbility(index);
+        if (Selection != null
+            && Selection.CurrentAbility != null
+            && Selection.CurrentAbility.Type == type)
+        {
+            type = Ability.CastType.None;
+        }
+        Selection.SetCurrentAbility(type);
     }
 
     private Agent NextAgent()
@@ -77,14 +91,22 @@ public class GameManager : MonoBehaviour
 
     public Agent AgentAt(Cell cell)
     {
+        if (cell == null)
+        {
+            Debug.LogError("{cell} is null");
+            return null;
+        }
+
         for (int i = 0; i < agents.Count; ++i)
         {
-            if (MapManager.Instance.CellAt(cell.Position) == cell
+            if (MapManager.Instance.CellAt(cell.Position) != null
+                && MapManager.Instance.CellAt(cell.Position) == cell
                 && cell.Position == agents[i].Position)
             {
                 return agents[i];
             }
         }
+        Debug.LogErrorFormat("No agent found at {0}", cell.Position);
         return null;
     }
 

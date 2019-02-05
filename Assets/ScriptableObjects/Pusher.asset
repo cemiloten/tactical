@@ -10,8 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d2c69a512372549fe865c87ddf67caac, type: 3}
-  m_Name: BadSimple
+  m_Name: Pusher
   m_EditorClassIdentifier: 
   maxMovement: 2
-  abilities:
-  - {fileID: 0}
+  ability: {fileID: 0}

@@ -1,7 +1,3 @@
-commit:
-
-
-select current ability with screen button
 game manager should only says which turn it is and whose turn it is to play. actions are handled by each agent
 highlight currently playing agent
 

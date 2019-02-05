@@ -8,13 +8,19 @@ public class Move : Ability
     public float movementDuration = 0.25f;
 
     private List<Cell> path;
-    private Cell current;
+    private Agent agent;
     private int pathIndex;
     private float movementTimer;
 
-    private void Start()
+    private void Awake()
     {
         Type = Ability.CastType.Move;
+    }
+
+    private void Update()
+    {
+        if (Casting && path != null)
+            MoveToNextCell();
     }
 
     public override void Cast(Cell source, Cell target)
@@ -31,6 +37,12 @@ public class Move : Ability
             return;
         }
 
+        if (Casting)
+        {
+            Debug.LogError("Cannot accept new move while moving");
+            return;
+        }
+
         if (source.CurrentState != Cell.State.Agent)
         {
             Debug.LogErrorFormat("{source} state must be Agent, is {0} instead", source.CurrentState);
@@ -43,34 +55,14 @@ public class Move : Ability
             return;
         }
 
-        if (!MapManager.Instance.AreNeighbours(source, target))
-        {
-            Debug.LogError("Can cast Push only on neighbour cell");
-            return;
-        }
+        Debug.LogFormat("Casting Move() from {0} to {1}", source.Position, target.Position);
 
-        // Debug.LogFormat("Casting Move() from {0} to {1}", source.Position, target.Position);
-
-        Casting = true;
         path = AStar.FindPath(source, target);
-        Agent sourceAgent = GameManager.Instance.AgentAt(source);
-        StartMoving(sourceAgent);
+        StartMoving(source);
     }
 
-    private void StartMoving(Agent agent)
+    private void StartMoving(Cell source)
     {
-        if (Casting)
-        {
-            Debug.LogError("Cannot accept new move while already moving");
-            return;
-        }
-
-        if (agent == null)
-        {
-            Debug.LogError("{agent} is null");
-            return;
-        }
-
         if (path == null)
         {
             Debug.LogError("{path} is null");
@@ -84,30 +76,39 @@ public class Move : Ability
         }
 
         Casting = true;
+        agent = GameManager.Instance.AgentAt(source);
+        source.CurrentState = Cell.State.Empty;
         movementTimer = 0f;
         pathIndex = 0;
-        current = path[pathIndex];
-        current.CurrentState = Cell.State.Empty;
-        GameManager.Instance.AgentAt(current).Position = path[path.Count - 1].Position;
+    }
 
-        while (current != path[path.Count - 1])
+    private void MoveToNextCell()
+    {
+        if (pathIndex >= path.Count)
         {
-            Cell next = path[pathIndex + 1];
-
-            transform.position = Vector3.Lerp(
-                Utilities.ToWorldPosition(current.Position, transform),
-                Utilities.ToWorldPosition(next.Position, transform),
-                movementTimer / movementDuration);
-
-            if (movementTimer < movementDuration)
-                movementTimer += Time.deltaTime;
-            else
-            {
-                movementTimer -= movementDuration;
-                current = path[++pathIndex];
-            }
+            FinishedMoving();
+            return;
         }
+        Cell current = MapManager.Instance.CellAt(agent.Position);
+        Cell next = path[pathIndex];
 
+        transform.position = Vector3.Lerp(
+            Utilities.ToWorldPosition(current.Position, transform),
+            Utilities.ToWorldPosition(next.Position, transform),
+            movementTimer / movementDuration);
+
+        if (movementTimer < movementDuration)
+            movementTimer += Time.deltaTime;
+        else
+        {
+            movementTimer -= movementDuration;
+            agent.Position = next.Position;
+            ++pathIndex;
+        }
+    }
+
+    private void FinishedMoving()
+    {
         Casting = false;
         path = null;
         pathIndex = 0;

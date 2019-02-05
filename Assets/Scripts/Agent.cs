@@ -9,8 +9,8 @@ public class Agent : MonoBehaviour
     private int pathIndex = 0;
     private Dictionary<Ability.CastType, Ability> abilities;
 
-    public Ability CurrentAbility { get; set; }
     public Vector2Int Position { get; set; }
+    public Ability CurrentAbility { get; private set; }
     public bool Busy
     {
         get
@@ -33,44 +33,49 @@ public class Agent : MonoBehaviour
 
     void Start()
     {
-        // List < Ability
-        // abilities.AddRange(GetComponents<Ability>());
-        // if (abilities.Count > 0)
-        //     CurrentAbility = abilities[0];
+        abilities = GetAbilities();
+        Ability ability = null;
+        abilities.TryGetValue(Ability.CastType.Move, out ability);
+        CurrentAbility = ability;
     }
 
-    // public void CastAbility()
-    // {
-    //     currentAbility.Cast(cell);
-    // }
+    void Update()
+    {
+        // todo
+    }
 
-    public void SetCurrentAbility(int index)
+    private Dictionary<Ability.CastType, Ability> GetAbilities()
+    {
+        Ability[] components = GetComponents<Ability>();
+        if (components.Length < 1)
+        {
+            Debug.LogError("No component of type {Ability} was found.");
+            return null;
+        }
+        var abilities = new Dictionary<Ability.CastType, Ability>();
+        for (int i = 0; i < components.Length; ++i)
+            if (!abilities.ContainsKey(components[i].Type))
+                abilities[components[i].Type] = components[i];
+        return abilities;
+    }
+
+    public void SetCurrentAbility(Ability.CastType type)
     {
         if (abilities == null)
         {
             Debug.LogError("Cannot update ability, {abilities} is null.");
             return;
         }
+        CurrentAbility = GetFromType(type);
+    }
 
-        if (abilities.Count < 1)
-        {
-            Debug.LogError("Cannot update ability, {abilities} count is 0");
-            return;
-        }
-
-        if (index > abilities.Count - 1)
-        {
-            Debug.LogError("{index} outside of {abilities} range");
-            return;
-        }
-
-        if (index < 0)
-        {
-            CurrentAbility = null;
-            return;
-        }
-
-        // CurrentAbility = abilities[index];
+    private Ability GetFromType(Ability.CastType type)
+    {
+        if (type == Ability.CastType.None)
+            return null;
+        Ability ability = null;
+        abilities.TryGetValue(type, out ability);
+        return ability;
     }
 
     public void SnapTo(Vector2Int pos)

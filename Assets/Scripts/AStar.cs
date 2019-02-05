@@ -90,14 +90,24 @@ public static class AStar
 
     public static List<Cell> FindPath(Cell _start, Cell _goal)
     {
-        if (_start == null || _goal == null)
+        if (_start == null)
         {
+            Debug.LogError("{_start} is null");
             return null;
         }
+
+        if (_goal == null)
+        {
+            Debug.LogError("{_goal} is null");
+            return null;
+        }
+
         if (!_goal.Walkable)
         {
+            Debug.LogError("{_goal} is not walkable");
             return null;
         }
+
         MapManager manager = MapManager.Instance;
         Node start = new Node(_start);
         Node goal = new Node(_goal);
@@ -175,7 +185,13 @@ public static class AStar
     {
         if (node == null)
         {
-            Debug.LogError("{node} null reference");
+            Debug.LogError("{node} is null");
+            return null;
+        }
+
+        if (node.cell == null)
+        {
+            Debug.LogError("{node.cell} is null");
             return null;
         }
 
