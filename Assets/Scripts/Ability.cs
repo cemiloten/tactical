@@ -18,6 +18,9 @@ public abstract class Ability : MonoBehaviour
 
     public abstract void Cast(Cell source, Cell target);
 
+    // Cells that can be targeted with this ability, from {source} Cell.
+    public abstract List<Cell> Range(Cell source);
+
     private void Awake()
     {
         Casting = false;

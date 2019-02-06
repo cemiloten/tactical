@@ -6,11 +6,11 @@ public class Agent : MonoBehaviour
 {
     public AgentProperties properties;
 
-    private int pathIndex = 0;
     private Dictionary<Ability.CastType, Ability> abilities;
 
     public Vector2Int Position { get; set; }
     public Ability CurrentAbility { get; private set; }
+    public bool Selected { get { return this == GameManager.Instance.Selection; } }
     public bool Busy
     {
         get
@@ -49,7 +49,7 @@ public class Agent : MonoBehaviour
         Ability[] components = GetComponents<Ability>();
         if (components.Length < 1)
         {
-            Debug.LogError("No component of type {Ability} was found.");
+            Debug.LogError("No component of type [Ability] was found.");
             return null;
         }
         var abilities = new Dictionary<Ability.CastType, Ability>();
@@ -63,7 +63,7 @@ public class Agent : MonoBehaviour
     {
         if (abilities == null)
         {
-            Debug.LogError("Cannot update ability, {abilities} is null.");
+            Debug.LogError("Cannot update ability, [abilities] is null.");
             return;
         }
         CurrentAbility = GetFromType(type);

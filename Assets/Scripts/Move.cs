@@ -7,10 +7,10 @@ public class Move : Ability
     [Tooltip("Time that it takes to move between two cells.")]
     public float movementDuration = 0.25f;
 
-    private List<Cell> path;
     private Agent agent;
     private int pathIndex;
     private float movementTimer;
+    public List<Cell> Path { get; set; }
 
     private void Awake()
     {
@@ -19,21 +19,32 @@ public class Move : Ability
 
     private void Update()
     {
-        if (Casting && path != null)
+        if (Casting && Path != null)
             MoveToNextCell();
+    }
+
+    public override List<Cell> Range(Cell source)
+    {
+        if (source == null)
+        {
+            Debug.LogError("[source] is null");
+            return null;
+        }
+
+        return PathMaker.ExpandToWalkables(source, range);
     }
 
     public override void Cast(Cell source, Cell target)
     {
         if (source == null)
         {
-            Debug.LogError("{source} is null");
+            Debug.LogError("[source] is null");
             return;
         }
 
         if (target == null)
         {
-            Debug.LogError("{target} is null");
+            Debug.LogError("[target] is null");
             return;
         }
 
@@ -45,7 +56,7 @@ public class Move : Ability
 
         if (source.CurrentState != Cell.State.Agent)
         {
-            Debug.LogErrorFormat("{source} state must be Agent, is {0} instead", source.CurrentState);
+            Debug.LogErrorFormat("[source], {0}: state must be Agent, is {1} instead", source.Position, source.CurrentState);
             return;
         }
 
@@ -57,21 +68,26 @@ public class Move : Ability
 
         Debug.LogFormat("Casting Move() from {0} to {1}", source.Position, target.Position);
 
-        path = AStar.FindPath(source, target);
+        if (Path == null)
+        {
+            Debug.Log("[Path] is null, finding fastest path with AStar");
+            Path = PathMaker.AStar(source, target);
+        }
+
         StartMoving(source);
     }
 
     private void StartMoving(Cell source)
     {
-        if (path == null)
+        if (Path == null)
         {
-            Debug.LogError("{path} is null");
+            Debug.LogError("[Path] is null, cannot start moving");
             return;
         }
 
-        if (path.Count < 1)
+        if (Path.Count < 1)
         {
-            Debug.LogError("{path} must contain at least one element");
+            Debug.LogError("[Path] is empty");
             return;
         }
 
@@ -84,13 +100,13 @@ public class Move : Ability
 
     private void MoveToNextCell()
     {
-        if (pathIndex >= path.Count)
+        if (pathIndex >= Path.Count)
         {
             FinishedMoving();
             return;
         }
         Cell current = MapManager.Instance.CellAt(agent.Position);
-        Cell next = path[pathIndex];
+        Cell next = Path[pathIndex];
 
         transform.position = Vector3.Lerp(
             Utilities.ToWorldPosition(current.Position, transform),
@@ -110,7 +126,7 @@ public class Move : Ability
     private void FinishedMoving()
     {
         Casting = false;
-        path = null;
+        Path = null;
         pathIndex = 0;
         movementTimer = 0f;
         agent.Position = Utilities.ToMapPosition(transform.position);

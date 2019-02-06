@@ -6,34 +6,40 @@ public class Pull : Ability
 {
     public int power;
 
-    private void Start()
+    private void Awake()
     {
         Type = Ability.CastType.Action;
     }
 
+    public override List<Cell> Range(Cell source)
+    {
+       return PathMaker.GetStraightLine(source, range);
+    }
+
     public override void Cast(Cell source, Cell target)
     {
+        Debug.Log("calling");
         if (source == null)
         {
-            Debug.LogError("{source} is null");
+            Debug.LogError("[source] is null");
             return;
         }
 
         if (target == null)
         {
-            Debug.LogError("{target} is null");
+            Debug.LogError("[target] is null");
             return;
         }
 
         if (source.CurrentState != Cell.State.Agent)
         {
-            Debug.LogErrorFormat("{source} state must be Agent, is {0} instead", source.CurrentState);
+            Debug.LogErrorFormat("[source] state must be Agent, is {0} instead", source.CurrentState);
             return;
         }
 
         if (target.CurrentState != Cell.State.Agent)
         {
-            Debug.LogErrorFormat("{target} state must be Agent, is {0} instead", target.CurrentState);
+            Debug.LogErrorFormat("[target] state must be Agent, is {0} instead", target.CurrentState);
             return;
         }
 
@@ -45,8 +51,23 @@ public class Pull : Ability
 
         Debug.LogFormat("Casting Pull() from {0} to {1}", source.Position, target.Position);
 
-        List<Cell> path = AStar.FindPathToNearestNeighbour(target, source);
-        Agent agent = GameManager.Instance.AgentAt(target);
-        // agent.Move(path);
+        Vector2Int direction = source.Position - target.Position;
+        direction = direction.Normalized();
+
+        List<Cell> path = PathMaker.StraightPath(target, direction, power);
+        if (path.Count <= 1)
+        {
+            Debug.Log("Path too short, cannot pull");
+            return;
+        }
+
+        Agent targetAgent = GameManager.Instance.AgentAt(target);
+        Ability ability = targetAgent.CurrentAbility;
+        if (ability.Type != Ability.CastType.Move)
+            targetAgent.SetCurrentAbility(Ability.CastType.Move);
+        Move move = ability as Move;
+        move.Path = path;
+        move.Cast(path[0], path[path.Count - 1]);
+        targetAgent.SetCurrentAbility(ability.Type);
     }
 }

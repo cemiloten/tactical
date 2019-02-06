@@ -6,8 +6,8 @@ public class MapManager : MonoBehaviour
 {
     public int width;
     public int height;
-    public float tileSize = 1.0f;
-    public float tileOffset = 0.5f;
+    // public float tileSize = 1.0f;
+    // public float tileOffset = 0.5f;
 
     private Cell[] cells;
 
@@ -71,13 +71,13 @@ public class MapManager : MonoBehaviour
     {
         if (c1 == null || c2 == null)
         {
-            Debug.LogError("{c1} or {c2} is null");
+            Debug.LogError("[c1] or [c2] is null");
             return false;
         }
 
         if (!IsPositionOnMap(c1.Position) || !IsPositionOnMap(c2.Position))
         {
-            Debug.LogError("{c1} or {c2} is not a position on the map");
+            Debug.LogError("[c1] or [c2] is not a position on the map");
             return false;
         }
 
@@ -106,7 +106,7 @@ public class MapManager : MonoBehaviour
         return CellAt(new Vector2Int(x, y));
     }
 
-    private List<Cell> GetNeighbours(Cell cell)
+    public List<Cell> GetNeighbours(Cell cell)
     {
         return new List<Cell>()
         {
@@ -121,13 +121,13 @@ public class MapManager : MonoBehaviour
     {
         if (source == null)
         {
-            Debug.LogError("{source} is null");
+            Debug.LogError("[source] is null");
             return null;
         }
 
         if (range < 0)
         {
-            Debug.LogError("{range} cannot be inferior to 0");
+            Debug.LogError("[range] cannot be inferior to 0");
             return null;
         }
 
@@ -190,23 +190,36 @@ public class MapManager : MonoBehaviour
         if (agent == null)
             return;
         if (agent.CurrentAbility == null
-            || agent.CurrentAbility.Type == Ability.CastType.None)
+            || agent.CurrentAbility.Type == Ability.CastType.None
+            || agent.Busy)
         {
             VisualPath = null;
         }
         else
         {
-            VisualPath = GetCastRange(
-                MapManager.Instance.CellAt(agent.Position),
-                agent.CurrentAbility.range);
+            VisualPath = agent.CurrentAbility.Range(
+                MapManager.Instance.CellAt(agent.Position));
         }
 
         for (int i = 0; i < cells.Length; ++i)
         {
+            if (cells[i] == null)
+                continue;
+
             if (VisualPath != null && VisualPath.Contains(cells[i]))
+            {
                 cells[i].Color = Color.green;
+            }
+            else if (!cells[i].Walkable)
+            {
+                cells[i].Color = new Color(1, 0.7f, 0);
+                if (GameManager.Instance.AgentAt(cells[i]).Selected)
+                    cells[i].Color = Color.blue;
+            }
             else
+            {
                 cells[i].Color = Color.yellow;
+            }
         }
     }
 }

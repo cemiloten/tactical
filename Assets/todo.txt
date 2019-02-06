@@ -1,13 +1,16 @@
-game manager should only says which turn it is and whose turn it is to play. actions are handled by each agent
-highlight currently playing agent
+commit:
+    fixed movement range
+    adding visual range to each ability
+    can cast all abilities
+    AStar becomes PathMaker, lots of new methods
 
+highlight currently playing agent
 
 Gameplay:
     2/3/4 characters per team
     "capture" an enemy agent to win
 
-Mover:
-    can push/pull agents (enemy or ally)
-
+Pusher
+Puller
 Switcher:
     switches places with agents (enemy or ally)

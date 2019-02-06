@@ -52,12 +52,24 @@ public class GameManager : MonoBehaviour
             Selection = NextAgent();
         }
 
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            SetCurrentAbility(Ability.CastType.Move);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            SetCurrentAbility(Ability.CastType.Action);
+        }
+
         if (Input.GetMouseButtonDown(0)
             && MapManager.Instance.IsPositionOnMap(mousePos)
             && Selection != null
             && Selection.CurrentAbility != null
-            && Selection.CurrentAbility.Type != Ability.CastType.None)
+            && Selection.CurrentAbility.Type != Ability.CastType.None
+            && MapManager.Instance.VisualPath.Contains(MapManager.Instance.CellAt(mousePos)))
         {
+           Debug.Log("clicking");
             Selection.CurrentAbility.Cast(
                 MapManager.Instance.CellAt(Selection.Position),
                 MapManager.Instance.CellAt(mousePos));
@@ -93,7 +105,7 @@ public class GameManager : MonoBehaviour
     {
         if (cell == null)
         {
-            Debug.LogError("{cell} is null");
+            Debug.LogError("[cell] is null");
             return null;
         }
 
@@ -106,7 +118,7 @@ public class GameManager : MonoBehaviour
                 return agents[i];
             }
         }
-        Debug.LogErrorFormat("No agent found at {0}", cell.Position);
+        // Debug.LogErrorFormat("No agent found at {0}", cell.Position);
         return null;
     }
 
