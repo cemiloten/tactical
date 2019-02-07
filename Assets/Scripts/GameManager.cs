@@ -11,9 +11,9 @@ public class GameManager : MonoBehaviour
     public Button actionButton;
     public Material red;
     public Material blue;
+    public int playerCount = 2;
     public List<GameObject> agentsPrefabs;
 
-    private int playerCount = 2;
     private int currentPlayer = 0;
     private int nextAgentIndex = 0;
     private List<Agent> agents;
@@ -89,7 +89,7 @@ public class GameManager : MonoBehaviour
 
     private Agent NextAgent()
     {
-        nextAgentIndex = (nextAgentIndex + 1) % playerCount;
+        nextAgentIndex = (nextAgentIndex + 1) % agentsPrefabs.Count;
         return agents[currentPlayer * agentsPrefabs.Count + nextAgentIndex];
     }
 
@@ -127,8 +127,8 @@ public class GameManager : MonoBehaviour
         agents = new List<Agent>(playerCount * agentsPrefabs.Count);
         for (int i = 0; i < playerCount * agentsPrefabs.Count; ++i)
         {
-            GameObject go = Instantiate(agentsPrefabs[i % playerCount]) as GameObject;
-            go.GetComponent<Renderer>().sharedMaterial = i < 2 ? red : blue;
+            GameObject go = Instantiate(agentsPrefabs[i % agentsPrefabs.Count]) as GameObject;
+            go.GetComponent<Renderer>().sharedMaterial = i < agentsPrefabs.Count ? red : blue;
             Agent agent = go.GetComponent<Agent>();
             agents.Add(agent);
         }

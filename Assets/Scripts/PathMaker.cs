@@ -21,6 +21,36 @@ public static class PathMaker
         yield return Direction.Down;
     }
 
+    private static Cell DirectionToCell(Cell start, Direction direction, int range)
+    {
+        if (start == null)
+        {
+            Debug.LogError("[start] is null.");
+            return null;
+        }
+
+        if (range < 1)
+        {
+            Debug.LogError("[range] must be at least 1");
+            return null;
+        }
+
+        switch (direction)
+        {
+            case Direction.Right:
+                return MapManager.Instance.CellAt(start.Position.x + range, start.Position.y);
+            case Direction.Up:
+                return MapManager.Instance.CellAt(start.Position.x, start.Position.y + range);
+            case Direction.Left:
+                return MapManager.Instance.CellAt(start.Position.x - range, start.Position.y);
+            case Direction.Down:
+                return MapManager.Instance.CellAt(start.Position.x, start.Position.y - range);
+            default:
+                Debug.LogError("[direction] is not known");
+                return null;
+        }
+    }
+
     // Get cells that are in a straight line at a maximum distance of [range]
     public static List<Cell> GetStraightLine(Cell start, int range)
     {
@@ -58,36 +88,6 @@ public static class PathMaker
         return result;
     }
 
-    private static Cell DirectionToCell(Cell start, Direction direction, int range)
-    {
-        if (start == null)
-        {
-            Debug.LogError("[start] is null.");
-            return null;
-        }
-
-        if (range < 1)
-        {
-            Debug.LogError("[range] must be at least 1");
-            return null;
-        }
-
-        switch (direction)
-        {
-            case Direction.Right:
-                return MapManager.Instance.CellAt(start.Position.x + range, start.Position.y);
-            case Direction.Up:
-                return MapManager.Instance.CellAt(start.Position.x, start.Position.y + range);
-            case Direction.Left:
-                return MapManager.Instance.CellAt(start.Position.x - range, start.Position.y);
-            case Direction.Down:
-                return MapManager.Instance.CellAt(start.Position.x, start.Position.y - range);
-            default:
-                Debug.LogError("[direction] is not known");
-                return null;
-        }
-    }
-
     public static List<Cell> GetNeighbours(Cell cell)
     {
         return new List<Cell>()
@@ -111,6 +111,21 @@ public static class PathMaker
             path.Add(cell);
         }
         return path;
+    }
+
+    public static List<Cell> GetKnightRange(Cell start)
+    {
+        return new List<Cell>()
+        {
+            MapManager.Instance.CellAt(start.Position.x + 2, start.Position.y + 1),
+            MapManager.Instance.CellAt(start.Position.x + 1, start.Position.y + 2),
+            MapManager.Instance.CellAt(start.Position.x - 1, start.Position.y + 2),
+            MapManager.Instance.CellAt(start.Position.x - 2, start.Position.y + 1),
+            MapManager.Instance.CellAt(start.Position.x - 2, start.Position.y - 1),
+            MapManager.Instance.CellAt(start.Position.x - 1, start.Position.y - 2),
+            MapManager.Instance.CellAt(start.Position.x + 1, start.Position.y - 2),
+            MapManager.Instance.CellAt(start.Position.x + 2, start.Position.y - 1)
+        };
     }
 
     public static List<Cell> ExpandToWalkables(Cell start, int range)

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657838, g: 0.49641234, b: 0.57481676, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -959,8 +959,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 8
   height: 8
-  tileSize: 1
-  tileOffset: 0.5
 --- !u!4 &752816574
 Transform:
   m_ObjectHideFlags: 0
@@ -1090,9 +1088,11 @@ MonoBehaviour:
   actionButton: {fileID: 1751618837}
   red: {fileID: 2100000, guid: d644c013738374e93a6cc02132da7880, type: 2}
   blue: {fileID: 2100000, guid: 01780c0c48f4f49839adbf379ddcc6a3, type: 2}
+  playerCount: 2
   agentsPrefabs:
-  - {fileID: 5139842308214315741, guid: 709f8ef2a9c9985448351734efa68d41, type: 3}
+  - {fileID: 1160936408645608421, guid: 709f8ef2a9c9985448351734efa68d41, type: 3}
   - {fileID: 3105676006993699037, guid: 1e27e93248b5a684e8a4c62951657277, type: 3}
+  - {fileID: 2288772474814796084, guid: 335927c4683df974792b799d1cf88de9, type: 3}
 --- !u!4 &1719863303
 Transform:
   m_ObjectHideFlags: 0

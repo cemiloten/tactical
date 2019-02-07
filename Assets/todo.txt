@@ -1,10 +1,10 @@
 commit:
-    fixed movement range
-    adding visual range to each ability
-    can cast all abilities
-    AStar becomes PathMaker, lots of new methods
+    added swapper
 
-highlight currently playing agent
+
+todo:
+    orient agents depending on their last actions/movements
+
 
 Gameplay:
     2/3/4 characters per team
