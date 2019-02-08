@@ -10,17 +10,13 @@ public class Move : Ability
     private Agent agent;
     private int pathIndex;
     private float movementTimer;
+    private int pointsLeft;
     public List<Cell> Path { get; set; }
 
     private void Awake()
     {
         Type = Ability.CastType.Move;
-    }
-
-    private void Update()
-    {
-        if (Casting && Path != null)
-            MoveToNextCell();
+        pointsLeft = range;
     }
 
     public override List<Cell> Range(Cell source)
@@ -31,7 +27,7 @@ public class Move : Ability
             return null;
         }
 
-        return PathMaker.ExpandToWalkables(source, range);
+        return PathMaker.ExpandToWalkables(source, pointsLeft);
     }
 
     public override void Cast(Cell source, Cell target)
@@ -66,8 +62,6 @@ public class Move : Ability
             return;
         }
 
-        Debug.LogFormat("Casting Move() from {0} to {1}", source.Position, target.Position);
-
         if (Path == null)
         {
             Debug.Log("[Path] is null, finding fastest path with AStar");
@@ -96,36 +90,40 @@ public class Move : Ability
         source.CurrentState = Cell.State.Empty;
         movementTimer = 0f;
         pathIndex = 0;
+
+        StartCoroutine("UpdateMove");
     }
 
-    private void MoveToNextCell()
+    private IEnumerator UpdateMove()
     {
-        if (pathIndex >= Path.Count)
+        while (pathIndex < Path.Count)
         {
-            FinishedMoving();
-            return;
-        }
-        Cell current = MapManager.Instance.CellAt(agent.Position);
-        Cell next = Path[pathIndex];
+            Cell current = MapManager.Instance.CellAt(agent.Position);
+            Cell next = Path[pathIndex];
+            transform.position = Vector3.Lerp(
+                Utilities.ToWorldPosition(current.Position, transform),
+                Utilities.ToWorldPosition(next.Position, transform),
+                movementTimer / movementDuration);
 
-        transform.position = Vector3.Lerp(
-            Utilities.ToWorldPosition(current.Position, transform),
-            Utilities.ToWorldPosition(next.Position, transform),
-            movementTimer / movementDuration);
-
-        if (movementTimer < movementDuration)
-            movementTimer += Time.deltaTime;
-        else
-        {
-            movementTimer -= movementDuration;
-            agent.Position = next.Position;
-            ++pathIndex;
+            if (movementTimer < movementDuration)
+                movementTimer += Time.deltaTime;
+            else
+            {
+                movementTimer -= movementDuration;
+                agent.Position = next.Position;
+                ++pathIndex;
+            }
+            yield return null;
         }
+
+        FinishedMoving();
     }
 
     private void FinishedMoving()
     {
+        Debug.Log("finished moving");
         Casting = false;
+        pointsLeft -= Path.Count;
         Path = null;
         pathIndex = 0;
         movementTimer = 0f;

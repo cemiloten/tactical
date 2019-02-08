@@ -138,7 +138,7 @@ public static class PathMaker
 
         if (range == 0)
         {
-            return new List<Cell>() { start };
+            return null;
         }
 
         List<Cell> result = new List<Cell>();

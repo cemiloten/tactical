@@ -9,7 +9,7 @@ public static class ExtensionMethods
     ///</summary>
     public static Vector2Int Normalized(this Vector2Int v)
     {
-        // todo: handle negatives
+        // todo: refactor
         int x;
         if (v.x > 1)
         {

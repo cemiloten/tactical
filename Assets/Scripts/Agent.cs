@@ -41,7 +41,6 @@ public class Agent : MonoBehaviour
 
     void Update()
     {
-        // todo
     }
 
     private Dictionary<Ability.CastType, Ability> GetAbilities()
