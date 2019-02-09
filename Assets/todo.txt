@@ -7,7 +7,7 @@ todo:
         winning spot
         turn based gameplay
         flag
-    orient agents depending on their last actions/movements
+        orient agents depending on their last actions/movements
 
 
 Gameplay:

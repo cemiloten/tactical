@@ -13,15 +13,15 @@ public static class PathMaker
         Down
     }
 
-    private static System.Collections.IEnumerable Directions()
+    private static Direction[] directions = new Direction[4]
     {
-        yield return Direction.Right;
-        yield return Direction.Up;
-        yield return Direction.Left;
-        yield return Direction.Down;
-    }
+        Direction.Right,
+        Direction.Up,
+        Direction.Left,
+        Direction.Down
+    };
 
-    private static Cell DirectionToCell(Cell start, Direction direction, int range)
+    private static Cell DirectionToCell(Cell start, Direction direction, int distance)
     {
         if (start == null)
         {
@@ -29,22 +29,22 @@ public static class PathMaker
             return null;
         }
 
-        if (range < 1)
+        if (distance < 1)
         {
-            Debug.LogError("[range] must be at least 1");
+            Debug.LogError("[distance] must be at least 1");
             return null;
         }
 
         switch (direction)
         {
             case Direction.Right:
-                return MapManager.Instance.CellAt(start.Position.x + range, start.Position.y);
+                return MapManager.Instance.CellAt(start.Position.x + distance, start.Position.y);
             case Direction.Up:
-                return MapManager.Instance.CellAt(start.Position.x, start.Position.y + range);
+                return MapManager.Instance.CellAt(start.Position.x, start.Position.y + distance);
             case Direction.Left:
-                return MapManager.Instance.CellAt(start.Position.x - range, start.Position.y);
+                return MapManager.Instance.CellAt(start.Position.x - distance, start.Position.y);
             case Direction.Down:
-                return MapManager.Instance.CellAt(start.Position.x, start.Position.y - range);
+                return MapManager.Instance.CellAt(start.Position.x, start.Position.y - distance);
             default:
                 Debug.LogError("[direction] is not known");
                 return null;
@@ -67,17 +67,16 @@ public static class PathMaker
         }
 
         List<Cell> result = new List<Cell>();
-        foreach (Direction dir in Directions())
+        for (int d = 0; d < directions.Length; ++d)
         {
             for (int r = 1; r <= range; ++r)
             {
-                // todo: refactor
-                Cell cell = DirectionToCell(start, dir, r);
+                Cell cell = DirectionToCell(start, directions[d], r);
                 if (cell == null)
                     break;
                 if (!cell.Walkable)
                 {
-                    // Can cast on agent, but ends there.
+                    // Accept agent, but path ends there.
                     if (cell.CurrentState == Cell.State.Agent)
                         result.Add(cell);
                     break;
@@ -92,10 +91,10 @@ public static class PathMaker
     {
         return new List<Cell>()
         {
-            DirectionToCell(cell, Direction.Right, 1),
-            DirectionToCell(cell, Direction.Up,    1),
-            DirectionToCell(cell, Direction.Left,  1),
-            DirectionToCell(cell, Direction.Down,  1)
+            MapManager.Instance.CellAt(cell.Position.x + 1, cell.Position.y),
+            MapManager.Instance.CellAt(cell.Position.x, cell.Position.y + 1),
+            MapManager.Instance.CellAt(cell.Position.x - 1, cell.Position.y),
+            MapManager.Instance.CellAt(cell.Position.x, cell.Position.y - 1),
         };
     }
 

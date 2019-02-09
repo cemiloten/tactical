@@ -17,15 +17,10 @@ public class Agent : MonoBehaviour
         {
             if (abilities == null || abilities.Count < 1)
                 return false;
-            var values = System.Enum.GetValues(typeof(Ability.CastType)) as Ability.CastType[];
-            for (int i = 0; i < values.Length; ++i)
+            foreach (Ability ability in abilities.Values)
             {
-                Ability a = null;
-                if (abilities.TryGetValue(values[i], out a))
-                {
-                    if (a.Casting)
-                        return true;
-                }
+                if (ability.Casting)
+                    return true;
             }
             return false;
         }
@@ -39,8 +34,12 @@ public class Agent : MonoBehaviour
         CurrentAbility = ability;
     }
 
-    void Update()
+    public void OnEndTurn()
     {
+        foreach (Ability ability in abilities.Values)
+        {
+            ability.Reset();
+        }
     }
 
     private Dictionary<Ability.CastType, Ability> GetAbilities()
@@ -79,7 +78,10 @@ public class Agent : MonoBehaviour
 
     public void SnapTo(Vector2Int pos)
     {
-        MapManager.Instance.CellAt(Position).CurrentState = Cell.State.Empty;
+        Cell cell = MapManager.Instance.CellAt(Position);
+        if (cell)
+            cell.CurrentState = Cell.State.Empty;
+
         Position = pos;
         transform.position = Utilities.ToWorldPosition(pos, transform);
         MapManager.Instance.CellAt(Position).CurrentState = Cell.State.Agent;

@@ -16,10 +16,14 @@ public abstract class Ability : MonoBehaviour
     public bool Casting { get; set; }
     public CastType Type { get; protected set; }
 
-    public abstract void Cast(Cell source, Cell target);
+    // Execute ability's effect
+    public abstract bool Cast(Cell source, Cell target);
 
     // Cells that can be targeted with this ability, from {source} Cell.
     public abstract List<Cell> Range(Cell source);
+
+    // Set ability's default state
+    public abstract IEnumerator Reset();
 
     private void Awake()
     {

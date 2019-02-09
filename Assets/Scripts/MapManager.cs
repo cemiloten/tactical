@@ -6,8 +6,6 @@ public class MapManager : MonoBehaviour
 {
     public int width;
     public int height;
-    // public float tileSize = 1.0f;
-    // public float tileOffset = 0.5f;
 
     private Cell[] cells;
 
@@ -21,44 +19,34 @@ public class MapManager : MonoBehaviour
         else
             if (Instance != this)
             Destroy(this);
-    }
 
-    void Start()
-    {
-        VisualPath = new List<Cell>();
         InstantiateCells();
     }
 
     void Update()
     {
         DrawMap();
-        UpdateCells();
+        UpdateVisualPath();
     }
 
-    public void PlaceAgents(List<Agent> agents)
+    public void PlaceAgents(Agent[] agents)
     {
-        for (int i = 0; i < agents.Count; ++i)
+        for (int i = 0; i < agents.Length; ++i)
         {
-            bool found = false;
-            for (int j = 0; j < cells.Length; ++j)
+            Cell cell;
+            Vector2Int pos;
+            // todo: Very bad in case of no walkable cells
+            do
             {
-                Vector2Int pos = new Vector2Int(
+                pos = new Vector2Int(
                     Random.Range(0, width),
                     Random.Range(0, height));
+                cell = CellAt(pos);
 
-                Cell cell = CellAt(pos);
-                if (cell != null && cell.Walkable)
-                {
-                    found = true;
-                    agents[i].SnapTo(pos);
-                    break;
-                }
-            }
-            if (!found)
-            {
-                Debug.LogError("No free cell to place agent to");
-                return;
-            }
+            } while (!cell.Walkable);
+            Debug.LogFormat("found pos at {0}", pos);
+
+            agents[i].SnapTo(pos);
         }
     }
 
@@ -159,7 +147,7 @@ public class MapManager : MonoBehaviour
         for (int y = 0; y < height; ++y)
             for (int x = 0; x < width; ++x)
             {
-                GameObject go = new GameObject(string.Format("Cell ({0}, {1})", x, y));
+                GameObject go = new GameObject(string.Format("[{0}, {1}]", x, y));
                 Cell cell = go.AddComponent<Cell>();
                 cell.Initialize(new Vector2Int(x, y));
                 cells[x + y * width] = cell;
@@ -184,11 +172,18 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    private void UpdateCells()
+    private void UpdateVisualPath()
     {
+        if (cells == null)
+        {
+            Debug.LogError("[cells] is null");
+            return;
+        }
+
         Agent agent = GameManager.Instance.Selection;
         if (agent == null)
             return;
+
         if (agent.CurrentAbility == null
             || agent.CurrentAbility.Type == Ability.CastType.None
             || agent.Busy)
@@ -203,22 +198,27 @@ public class MapManager : MonoBehaviour
 
         for (int i = 0; i < cells.Length; ++i)
         {
-            if (cells[i] == null)
-                continue;
-
-            if (VisualPath != null && VisualPath.Contains(cells[i]))
+            if (cells[i].Walkable)
             {
-                cells[i].Color = Color.green;
-            }
-            else if (!cells[i].Walkable)
-            {
-                cells[i].Color = new Color(1, 0.7f, 0);
-                if (GameManager.Instance.AgentAt(cells[i]).Selected)
-                    cells[i].Color = Color.blue;
+                cells[i].Color = Color.yellow;
             }
             else
             {
-                cells[i].Color = Color.yellow;
+                cells[i].Color = new Color(1, 0.7f, 0);
+            }
+
+            if (VisualPath != null)
+            {
+                for (int j = 0; j < VisualPath.Count; ++j)
+                {
+                    VisualPath[i].Color = Color.green;
+                }
+            }
+
+            Agent selection = GameManager.Instance.Selection;
+            if (selection != null)
+            {
+                CellAt(selection.Position).Color = Color.blue;
             }
         }
     }

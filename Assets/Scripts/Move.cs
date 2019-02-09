@@ -7,16 +7,29 @@ public class Move : Ability
     [Tooltip("Time that it takes to move between two cells.")]
     public float movementDuration = 0.25f;
 
+    [Tooltip("Maximum distance that the agent can travel in one turn")]
+    public int movementPoints = 3;
+
     private Agent agent;
-    private int pathIndex;
-    private float movementTimer;
-    private int pointsLeft;
+    private int pathIndex = 0;
+    private float movementTimer = 0;
     public List<Cell> Path { get; set; }
 
     private void Awake()
     {
         Type = Ability.CastType.Move;
-        pointsLeft = range;
+    }
+
+    public override IEnumerator Reset()
+    {
+        if (Casting)
+            // Wait for movement to end
+            yield return null;
+
+        movementPoints = range;
+        movementTimer = 0f;
+        pathIndex = 0;
+        Path = null;
     }
 
     public override List<Cell> Range(Cell source)
@@ -27,39 +40,39 @@ public class Move : Ability
             return null;
         }
 
-        return PathMaker.ExpandToWalkables(source, pointsLeft);
+        return PathMaker.ExpandToWalkables(source, movementPoints);
     }
 
-    public override void Cast(Cell source, Cell target)
+    public override bool Cast(Cell source, Cell target)
     {
         if (source == null)
         {
             Debug.LogError("[source] is null");
-            return;
+            return false;
         }
 
         if (target == null)
         {
             Debug.LogError("[target] is null");
-            return;
+            return false;
         }
 
         if (Casting)
         {
             Debug.LogError("Cannot accept new move while moving");
-            return;
+            return false;
         }
 
         if (source.CurrentState != Cell.State.Agent)
         {
             Debug.LogErrorFormat("[source], {0}: state must be Agent, is {1} instead", source.Position, source.CurrentState);
-            return;
+            return false;
         }
 
         if (target.CurrentState != Cell.State.Empty)
         {
             Debug.LogErrorFormat("Cannot move to cell with state '{0}'", target.CurrentState);
-            return;
+            return false;
         }
 
         if (Path == null)
@@ -69,6 +82,8 @@ public class Move : Ability
         }
 
         StartMoving(source);
+        StartCoroutine("Reset");
+        return true;
     }
 
     private void StartMoving(Cell source)
@@ -86,11 +101,15 @@ public class Move : Ability
         }
 
         Casting = true;
-        agent = GameManager.Instance.AgentAt(source);
         source.CurrentState = Cell.State.Empty;
+        agent = GameManager.Instance.AgentAt(source);
+        if (agent == null)
+        {
+            Debug.LogErrorFormat("Did not find agent at {0}", source.Position);
+            return;
+        }
         movementTimer = 0f;
         pathIndex = 0;
-
         StartCoroutine("UpdateMove");
     }
 
@@ -121,9 +140,8 @@ public class Move : Ability
 
     private void FinishedMoving()
     {
-        Debug.Log("finished moving");
         Casting = false;
-        pointsLeft -= Path.Count;
+        movementPoints -= Path.Count;
         Path = null;
         pathIndex = 0;
         movementTimer = 0f;

@@ -9,14 +9,15 @@ public class GameManager : MonoBehaviour
     public Text currentSelection;
     public Button moveButton;
     public Button actionButton;
+    public Button endTurnButton;
     public Material red;
     public Material blue;
     public int playerCount = 2;
-    public List<GameObject> agentsPrefabs;
+    public GameObject[] agentsPrefabs;
 
     private int currentPlayer = 0;
     private int nextAgentIndex = 0;
-    private List<Agent> agents;
+    private Agent[] agents;
 
     public Agent Selection { get; private set; }
     public static GameManager Instance { get; private set; }
@@ -28,21 +29,25 @@ public class GameManager : MonoBehaviour
         else
             if (Instance != this)
             Destroy(this);
+
+        moveButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Move); });
+        actionButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Action); });
+        endTurnButton.onClick.AddListener(EndTurn);
+        InstantiateAgents();
     }
 
     void Start()
     {
-        moveButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Move); });
-        actionButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Action); });
-        InstantiateAgents();
         MapManager.Instance.PlaceAgents(agents);
         Selection = agents[nextAgentIndex];
     }
 
+    public bool ready = false;
+
     void Update()
     {
-        currentTurn.text = string.Format("Turn {0}", nextAgentIndex / agents.Count);
-        currentSelection.text = string.Format("{0}\n {1}", Selection, Selection.CurrentAbility?.Type);
+        // currentTurn.text = string.Format("Turn {0}", nextAgentIndex / agents.Length);
+        // currentSelection.text = string.Format("{0}\n {1}", Selection, Selection.CurrentAbility?.Type);
 
         Vector2Int mousePos;
         Utilities.MousePos(out mousePos);
@@ -66,13 +71,22 @@ public class GameManager : MonoBehaviour
             && MapManager.Instance.IsPositionOnMap(mousePos)
             && Selection != null
             && Selection.CurrentAbility != null
-            && Selection.CurrentAbility.Type != Ability.CastType.None
-            && MapManager.Instance.VisualPath.Contains(MapManager.Instance.CellAt(mousePos)))
+            && Selection.CurrentAbility.Type != Ability.CastType.None)
         {
-           Debug.Log("clicking");
-            Selection.CurrentAbility.Cast(
-                MapManager.Instance.CellAt(Selection.Position),
-                MapManager.Instance.CellAt(mousePos));
+            if (MapManager.Instance.VisualPath == null)
+                Debug.Log("visual path null");
+            else if (MapManager.Instance.VisualPath.Contains(MapManager.Instance.CellAt(mousePos)))
+            {
+
+                bool cast = Selection.CurrentAbility.Cast(
+                    MapManager.Instance.CellAt(Selection.Position),
+                    MapManager.Instance.CellAt(mousePos));
+                if (Selection.CurrentAbility.Type == Ability.CastType.Action && cast)
+                {
+                    EndTurn();
+                }
+            }
+
         }
     }
 
@@ -89,15 +103,18 @@ public class GameManager : MonoBehaviour
 
     private Agent NextAgent()
     {
-        nextAgentIndex = (nextAgentIndex + 1) % agentsPrefabs.Count;
-        return agents[currentPlayer * agentsPrefabs.Count + nextAgentIndex];
+        nextAgentIndex = (nextAgentIndex + 1) % agentsPrefabs.Length;
+        return agents[currentPlayer * agentsPrefabs.Length + nextAgentIndex];
     }
 
-    public void EndTurn()
+    private void EndTurn()
     {
+        Debug.Log("endturn");
+        Selection.OnEndTurn();
+
         MapManager.Instance.VisualPath = null;
         currentPlayer = (currentPlayer + 1) % playerCount;
-        nextAgentIndex = currentPlayer * agentsPrefabs.Count;
+        nextAgentIndex = currentPlayer * agentsPrefabs.Length;
         Selection = agents[nextAgentIndex];
     }
 
@@ -109,7 +126,7 @@ public class GameManager : MonoBehaviour
             return null;
         }
 
-        for (int i = 0; i < agents.Count; ++i)
+        for (int i = 0; i < agents.Length; ++i)
         {
             if (MapManager.Instance.CellAt(cell.Position) != null
                 && MapManager.Instance.CellAt(cell.Position) == cell
@@ -118,19 +135,32 @@ public class GameManager : MonoBehaviour
                 return agents[i];
             }
         }
-        // Debug.LogErrorFormat("No agent found at {0}", cell.Position);
+        Debug.LogErrorFormat("No agent found at {0}", cell.Position);
         return null;
     }
 
     private void InstantiateAgents()
     {
-        agents = new List<Agent>(playerCount * agentsPrefabs.Count);
-        for (int i = 0; i < playerCount * agentsPrefabs.Count; ++i)
+        agents = new Agent[playerCount * agentsPrefabs.Length];
+        for (int i = 0; i < playerCount * agentsPrefabs.Length; ++i)
         {
-            GameObject go = Instantiate(agentsPrefabs[i % agentsPrefabs.Count]) as GameObject;
-            go.GetComponent<Renderer>().sharedMaterial = i < agentsPrefabs.Count ? red : blue;
-            Agent agent = go.GetComponent<Agent>();
-            agents.Add(agent);
+            int index = i % agentsPrefabs.Length;
+            GameObject go = Instantiate(agentsPrefabs[index]) as GameObject;
+            string name;
+            Material m;
+            if (i < agentsPrefabs.Length)
+            {
+                m = red;
+                name = "Red";
+            }
+            else
+            {
+                m = blue;
+                name = "Blue";
+            }
+            go.GetComponent<Renderer>().sharedMaterial = m;
+            name = string.Format("{0} - {1}", agentsPrefabs[index].name, name);
+            agents[i] = go.GetComponent<Agent>();
         }
     }
 }

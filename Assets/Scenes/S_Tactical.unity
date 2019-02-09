@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657838, g: 0.49641234, b: 0.57481676, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -191,6 +191,62 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 49474106}
   m_CullTransparentMesh: 0
+--- !u!1 &234784287
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 234784289}
+  - component: {fileID: 234784288}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &234784288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 234784287}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49cb6839f30ba514e87f503dde5193b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentTurn: {fileID: 1838139055}
+  currentSelection: {fileID: 610008769}
+  moveButton: {fileID: 667690284}
+  actionButton: {fileID: 1751618837}
+  endTurnButton: {fileID: 317936313}
+  red: {fileID: 2100000, guid: d644c013738374e93a6cc02132da7880, type: 2}
+  blue: {fileID: 2100000, guid: 01780c0c48f4f49839adbf379ddcc6a3, type: 2}
+  playerCount: 2
+  agentsPrefabs:
+  - {fileID: 1160936408645608421, guid: 709f8ef2a9c9985448351734efa68d41, type: 3}
+  - {fileID: 3105676006993699037, guid: 1e27e93248b5a684e8a4c62951657277, type: 3}
+  - {fileID: 2288772474814796084, guid: 335927c4683df974792b799d1cf88de9, type: 3}
+  ready: 0
+--- !u!4 &234784289
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 234784287}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &317936311
 GameObject:
   m_ObjectHideFlags: 0
@@ -269,18 +325,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 317936314}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1719863302}
-        m_MethodName: EndTurn
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &317936314
@@ -729,7 +774,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 75.884, y: 0, z: 0}
 --- !u!1 &610008767
 GameObject:
@@ -939,7 +984,7 @@ GameObject:
   - component: {fileID: 752816574}
   - component: {fileID: 752816573}
   m_Layer: 0
-  m_Name: Map
+  m_Name: MapManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1053,60 +1098,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1583354887}
   m_CullTransparentMesh: 0
---- !u!1 &1719863301
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1719863303}
-  - component: {fileID: 1719863302}
-  m_Layer: 0
-  m_Name: GameManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1719863302
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1719863301}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49cb6839f30ba514e87f503dde5193b0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  currentTurn: {fileID: 1838139055}
-  currentSelection: {fileID: 610008769}
-  moveButton: {fileID: 667690284}
-  actionButton: {fileID: 1751618837}
-  red: {fileID: 2100000, guid: d644c013738374e93a6cc02132da7880, type: 2}
-  blue: {fileID: 2100000, guid: 01780c0c48f4f49839adbf379ddcc6a3, type: 2}
-  playerCount: 2
-  agentsPrefabs:
-  - {fileID: 1160936408645608421, guid: 709f8ef2a9c9985448351734efa68d41, type: 3}
-  - {fileID: 3105676006993699037, guid: 1e27e93248b5a684e8a4c62951657277, type: 3}
-  - {fileID: 2288772474814796084, guid: 335927c4683df974792b799d1cf88de9, type: 3}
---- !u!4 &1719863303
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1719863301}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1751618835
 GameObject:
   m_ObjectHideFlags: 0

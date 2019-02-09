@@ -11,45 +11,43 @@ public class Swap : Ability
         Type = Ability.CastType.Action;
     }
 
-    private void Update()
-    {
-    }
+    public override IEnumerator Reset() { return null; }
 
     public override List<Cell> Range(Cell source)
     {
        return PathMaker.GetKnightRange(source);
     }
 
-    public override void Cast(Cell source, Cell target)
+    public override bool Cast(Cell source, Cell target)
     {
         if (source == null)
         {
             Debug.LogError("[source] is null");
-            return;
+            return false;
         }
 
         if (target == null)
         {
             Debug.LogError("[target] is null");
-            return;
+            return false;
         }
 
         if (Casting)
         {
             Debug.LogError("Cannot accept new Swap while casting");
-            return;
+            return false;
         }
 
         if (source.CurrentState != Cell.State.Agent)
         {
             Debug.LogErrorFormat("[source] at {0}: state must be Agent, is {1} instead", source.Position, source.CurrentState);
-            return;
+            return false;
         }
 
         if (target.CurrentState != Cell.State.Agent)
         {
             Debug.LogErrorFormat("[target] at {0}: state must be Agent, is {1} instead", target.Position, target.CurrentState);
-            return;
+            return false;
         }
 
         Debug.LogFormat("Casting Swap() from {0} to {1}", source.Position, target.Position);
@@ -63,5 +61,7 @@ public class Swap : Ability
 
         targetAgent.Position = temp;
         targetAgent.transform.position = Utilities.ToWorldPosition(targetAgent.Position, transform);
+
+        return true;
     }
 }
