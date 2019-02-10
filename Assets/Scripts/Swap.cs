@@ -11,8 +11,6 @@ public class Swap : Ability
         Type = Ability.CastType.Action;
     }
 
-    public override IEnumerator Reset() { return null; }
-
     public override List<Cell> Range(Cell source)
     {
        return PathMaker.GetKnightRange(source);

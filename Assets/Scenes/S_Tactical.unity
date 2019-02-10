@@ -230,9 +230,8 @@ MonoBehaviour:
   playerCount: 2
   agentsPrefabs:
   - {fileID: 1160936408645608421, guid: 709f8ef2a9c9985448351734efa68d41, type: 3}
-  - {fileID: 3105676006993699037, guid: 1e27e93248b5a684e8a4c62951657277, type: 3}
+  - {fileID: 8911662228182176663, guid: 1e27e93248b5a684e8a4c62951657277, type: 3}
   - {fileID: 2288772474814796084, guid: 335927c4683df974792b799d1cf88de9, type: 3}
-  ready: 0
 --- !u!4 &234784289
 Transform:
   m_ObjectHideFlags: 0
@@ -769,13 +768,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
-  m_LocalRotation: {x: 0.61486524, y: -0, z: -0, w: 0.78863215}
-  m_LocalPosition: {x: 4, y: 9.19, z: 1.25}
+  m_LocalRotation: {x: 0.5465097, y: -0, z: -0, w: 0.83745277}
+  m_LocalPosition: {x: 4, y: 7.32, z: -0.94}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 75.884, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 66.256004, y: 0, z: 0}
 --- !u!1 &610008767
 GameObject:
   m_ObjectHideFlags: 0

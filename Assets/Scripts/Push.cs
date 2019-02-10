@@ -11,8 +11,6 @@ public class Push : Ability
         Type = Ability.CastType.Action;
     }
 
-    public override IEnumerator Reset() { return null; }
-
     public override List<Cell> Range(Cell source)
     {
         return PathMaker.GetNeighbours(source);
@@ -34,13 +32,13 @@ public class Push : Ability
 
         if (source.CurrentState != Cell.State.Agent)
         {
-            Debug.LogError("[source] state must be Cell.StateAgent");
+            Debug.LogError("[source] cell of Push must contain an Agent");
             return false;
         }
 
         if (target.CurrentState != Cell.State.Agent)
         {
-            Debug.LogError("[target] state must be Cell.State.Agent");
+            Debug.LogError("[target] cell of Push state must contain an Agent");
             return false;
         }
 
@@ -50,27 +48,29 @@ public class Push : Ability
             return false;
         }
 
-        Debug.LogFormat("Casting Push() from {0} to {1}", source.Position, target.Position);
-
         Vector2Int direction = target.Position - source.Position;
         List<Cell> path = PathMaker.StraightPath(target, direction, power);
-        if (path.Count <= 1)
+        if (path == null)
         {
-            Debug.Log("Path too short, cannot move");
+            Debug.Log("Result from StraightPath is null");
             return false;
         }
 
-        // Agent targetAgent = GameManager.Instance.AgentAt(target);
-        // Ability ability = targetAgent.CurrentAbility;
-        // if (ability != null && ability.Type != Ability.CastType.Move)
-        //     targetAgent.SetCurrentAbility(Ability.CastType.Move);
-        // Move move = ability as Move;
-        // move.movementPoints = 99;
-        // move.Path = path;
-        // move.Cast(path[0], path[path.Count - 1]);
-        // move.Reset();
-        // targetAgent.SetCurrentAbility(ability.Type);
-        Debug.Log("not implemented");
+        if (path.Count <= 1)
+        {
+            Debug.Log("Result from StraightPath is too short, cannot push");
+            return false;
+        }
+
+        Agent targetAgent = GameManager.Instance.AgentAt(target);
+        Ability ability = targetAgent.CurrentAbility;
+        if (ability != null && ability.Type != Ability.CastType.Move)
+            targetAgent.SetCurrentAbility(Ability.CastType.Move);
+
+        Move move = targetAgent.CurrentAbility as Move;
+        move.MoveFromOther(path);
+
+        targetAgent.SetCurrentAbility(ability.Type);
         return true;
     }
 }

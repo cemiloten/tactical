@@ -1,15 +1,9 @@
 commit:
+    fixed move
+    fixed all abilities with correct handling of movement
 
 todo:
     implement gameplay:
-        use movement points on turn
-        turn finished after action
         winning spot
-        turn based gameplay
         flag
         orient agents depending on their last actions/movements
-
-
-Gameplay:
-    2/3/4 characters per team
-    "capture" an enemy agent to win

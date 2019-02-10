@@ -100,6 +100,18 @@ public static class PathMaker
 
     public static List<Cell> StraightPath(Cell start, Vector2Int direction, int distance)
     {
+        if (start == null)
+        {
+            Debug.LogError("[start] is null");
+            return null;
+        }
+
+        if (distance < 1)
+        {
+            Debug.LogError("[distance] cannot be inferior to 1");
+            return null;
+        }
+
         List<Cell> path = new List<Cell>() { start };
         for (int i = 1; i <= distance; ++i)
         {

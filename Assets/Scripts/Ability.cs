@@ -23,7 +23,10 @@ public abstract class Ability : MonoBehaviour
     public abstract List<Cell> Range(Cell source);
 
     // Set ability's default state
-    public abstract IEnumerator Reset();
+    public virtual void Reset()
+    {
+        Debug.LogFormat("Reset {0}", this);
+    }
 
     private void Awake()
     {

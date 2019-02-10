@@ -33,20 +33,19 @@ public class MapManager : MonoBehaviour
     {
         for (int i = 0; i < agents.Length; ++i)
         {
+            int index;
             Cell cell;
-            Vector2Int pos;
-            // todo: Very bad in case of no walkable cells
+            // note: Very bad in case of no walkable cells in map
             do
             {
-                pos = new Vector2Int(
-                    Random.Range(0, width),
-                    Random.Range(0, height));
-                cell = CellAt(pos);
-
+                index = Random.Range(0, cells.Length);
+                cell = cells[index];
             } while (!cell.Walkable);
-            Debug.LogFormat("found pos at {0}", pos);
+            cell.CurrentState = Cell.State.Agent;
 
-            agents[i].SnapTo(pos);
+            agents[i].Position = cell.Position;
+            agents[i].transform.position = Utilities.ToWorldPosition(
+                cell.Position, agents[i].transform);
         }
     }
 
@@ -174,6 +173,9 @@ public class MapManager : MonoBehaviour
 
     private void UpdateVisualPath()
     {
+        if (GameManager.Instance.HasBusyAgent)
+            return;
+
         if (cells == null)
         {
             Debug.LogError("[cells] is null");
@@ -211,7 +213,8 @@ public class MapManager : MonoBehaviour
             {
                 for (int j = 0; j < VisualPath.Count; ++j)
                 {
-                    VisualPath[i].Color = Color.green;
+                    if (VisualPath[j] != null)
+                        VisualPath[j].Color = Color.green;
                 }
             }
 

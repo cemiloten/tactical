@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,6 +22,18 @@ public class GameManager : MonoBehaviour
 
     public Agent Selection { get; private set; }
     public static GameManager Instance { get; private set; }
+    public bool HasBusyAgent
+    {
+        get
+        {
+            if (agents == null)
+                throw new NullReferenceException();
+            for (int a = 0; a < agents.Length; ++a)
+                if (agents[a].Busy)
+                    return true;
+            return false;
+        }
+    }
 
     void Awake()
     {
@@ -32,7 +45,7 @@ public class GameManager : MonoBehaviour
 
         moveButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Move); });
         actionButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Action); });
-        endTurnButton.onClick.AddListener(EndTurn);
+        endTurnButton.onClick.AddListener(ButtonToEndTurn);
         InstantiateAgents();
     }
 
@@ -42,30 +55,23 @@ public class GameManager : MonoBehaviour
         Selection = agents[nextAgentIndex];
     }
 
-    public bool ready = false;
-
     void Update()
     {
-        // currentTurn.text = string.Format("Turn {0}", nextAgentIndex / agents.Length);
-        // currentSelection.text = string.Format("{0}\n {1}", Selection, Selection.CurrentAbility?.Type);
+        currentTurn.text = string.Format("Turn {0}", nextAgentIndex / agents.Length);
+        if (Selection != null && Selection.CurrentAbility != null)
+            currentSelection.text = string.Format("{0}\n {1}", Selection, Selection.CurrentAbility.Type);
 
         Vector2Int mousePos;
         Utilities.MousePos(out mousePos);
 
         if (Input.GetKeyDown(KeyCode.Tab))
-        {
             Selection = NextAgent();
-        }
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
             SetCurrentAbility(Ability.CastType.Move);
-        }
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
             SetCurrentAbility(Ability.CastType.Action);
-        }
 
         if (Input.GetMouseButtonDown(0)
             && MapManager.Instance.IsPositionOnMap(mousePos)
@@ -77,16 +83,14 @@ public class GameManager : MonoBehaviour
                 Debug.Log("visual path null");
             else if (MapManager.Instance.VisualPath.Contains(MapManager.Instance.CellAt(mousePos)))
             {
-
                 bool cast = Selection.CurrentAbility.Cast(
                     MapManager.Instance.CellAt(Selection.Position),
                     MapManager.Instance.CellAt(mousePos));
                 if (Selection.CurrentAbility.Type == Ability.CastType.Action && cast)
                 {
-                    EndTurn();
+                    StartCoroutine(EndTurn());
                 }
             }
-
         }
     }
 
@@ -107,15 +111,25 @@ public class GameManager : MonoBehaviour
         return agents[currentPlayer * agentsPrefabs.Length + nextAgentIndex];
     }
 
-    private void EndTurn()
+
+    private void ButtonToEndTurn()
     {
-        Debug.Log("endturn");
+        StartCoroutine(EndTurn());
+    }
+
+    private IEnumerator EndTurn()
+    {
+        if (HasBusyAgent)
+            yield return null;
+
         Selection.OnEndTurn();
 
         MapManager.Instance.VisualPath = null;
         currentPlayer = (currentPlayer + 1) % playerCount;
         nextAgentIndex = currentPlayer * agentsPrefabs.Length;
+
         Selection = agents[nextAgentIndex];
+        Selection.SetCurrentAbility(Ability.CastType.Move);
     }
 
     public Agent AgentAt(Cell cell)
@@ -159,7 +173,7 @@ public class GameManager : MonoBehaviour
                 name = "Blue";
             }
             go.GetComponent<Renderer>().sharedMaterial = m;
-            name = string.Format("{0} - {1}", agentsPrefabs[index].name, name);
+            go.name = string.Format("{0} - {1}", agentsPrefabs[index].name, name);
             agents[i] = go.GetComponent<Agent>();
         }
     }

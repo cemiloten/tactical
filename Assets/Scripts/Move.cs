@@ -7,29 +7,28 @@ public class Move : Ability
     [Tooltip("Time that it takes to move between two cells.")]
     public float movementDuration = 0.25f;
 
-    [Tooltip("Maximum distance that the agent can travel in one turn")]
-    public int movementPoints = 3;
-
     private Agent agent;
-    private int pathIndex = 0;
-    private float movementTimer = 0;
+    private int pathIndex;
+    private float movementTimer;
+    private bool castedFromOther;
+
     public List<Cell> Path { get; set; }
+    public int MovementPoints { get; private set; }
 
     private void Awake()
     {
         Type = Ability.CastType.Move;
+        Reset();
     }
 
-    public override IEnumerator Reset()
+    public override void Reset()
     {
-        if (Casting)
-            // Wait for movement to end
-            yield return null;
-
-        movementPoints = range;
+        agent = null;
+        MovementPoints = range;
         movementTimer = 0f;
         pathIndex = 0;
         Path = null;
+        castedFromOther = false;
     }
 
     public override List<Cell> Range(Cell source)
@@ -40,7 +39,7 @@ public class Move : Ability
             return null;
         }
 
-        return PathMaker.ExpandToWalkables(source, movementPoints);
+        return PathMaker.ExpandToWalkables(source, MovementPoints);
     }
 
     public override bool Cast(Cell source, Cell target)
@@ -81,23 +80,43 @@ public class Move : Ability
             Path = PathMaker.AStar(source, target);
         }
 
-        StartMoving(source);
-        StartCoroutine("Reset");
-        return true;
+        return StartMoving(source);
     }
 
-    private void StartMoving(Cell source)
+    public void MoveFromOther(List<Cell> path)
     {
+        if (Casting)
+        {
+            Debug.LogError("Already Casting");
+            return;
+        }
+
+        Path = path;
+        MovementPoints = int.MaxValue;
+        if (Cast(path[0], path[path.Count - 1]))
+        {
+            castedFromOther = true;
+        }
+    }
+
+    private bool StartMoving(Cell source)
+    {
+        if (source == null)
+        {
+            Debug.LogError("[source] is null");
+            return false;
+        }
+
         if (Path == null)
         {
             Debug.LogError("[Path] is null, cannot start moving");
-            return;
+            return false;
         }
 
         if (Path.Count < 1)
         {
             Debug.LogError("[Path] is empty");
-            return;
+            return false;
         }
 
         Casting = true;
@@ -106,11 +125,13 @@ public class Move : Ability
         if (agent == null)
         {
             Debug.LogErrorFormat("Did not find agent at {0}", source.Position);
-            return;
+            return false;
         }
         movementTimer = 0f;
         pathIndex = 0;
-        StartCoroutine("UpdateMove");
+
+        StartCoroutine(UpdateMove());
+        return true;
     }
 
     private IEnumerator UpdateMove()
@@ -134,18 +155,22 @@ public class Move : Ability
             }
             yield return null;
         }
-
         FinishedMoving();
     }
 
     private void FinishedMoving()
     {
         Casting = false;
-        movementPoints -= Path.Count;
+        MovementPoints -= Path.Count;
         Path = null;
         pathIndex = 0;
         movementTimer = 0f;
         agent.Position = Utilities.ToMapPosition(transform.position);
         MapManager.Instance.CellAt(agent.Position).CurrentState = Cell.State.Agent;
+
+        if (castedFromOther)
+        {
+            Reset();
+        }
     }
 }

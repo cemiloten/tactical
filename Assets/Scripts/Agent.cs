@@ -1,27 +1,25 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Agent : MonoBehaviour
 {
-    public AgentProperties properties;
-
     private Dictionary<Ability.CastType, Ability> abilities;
 
     public Vector2Int Position { get; set; }
     public Ability CurrentAbility { get; private set; }
-    public bool Selected { get { return this == GameManager.Instance.Selection; } }
     public bool Busy
     {
         get
         {
-            if (abilities == null || abilities.Count < 1)
-                return false;
+            if (abilities == null)
+                throw new NullReferenceException();
+            if (abilities.Count < 1)
+                throw new MissingComponentException();
             foreach (Ability ability in abilities.Values)
-            {
                 if (ability.Casting)
                     return true;
-            }
             return false;
         }
     }
@@ -79,7 +77,7 @@ public class Agent : MonoBehaviour
     public void SnapTo(Vector2Int pos)
     {
         Cell cell = MapManager.Instance.CellAt(Position);
-        if (cell)
+        if (cell != null)
             cell.CurrentState = Cell.State.Empty;
 
         Position = pos;
