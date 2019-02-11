@@ -16,6 +16,9 @@ public class GameManager : MonoBehaviour
     public int playerCount = 2;
     public GameObject[] agentsPrefabs;
 
+    public delegate void OnTurnEndHandler();
+    public event OnTurnEndHandler OnTurnEnd;
+
     private int currentPlayer = 0;
     private int nextAgentIndex = 0;
     private Agent[] agents;
@@ -119,10 +122,10 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator EndTurn()
     {
-        if (HasBusyAgent)
+        while (HasBusyAgent)
+        {
             yield return null;
-
-        Selection.OnEndTurn();
+        }
 
         MapManager.Instance.VisualPath = null;
         currentPlayer = (currentPlayer + 1) % playerCount;
@@ -130,6 +133,8 @@ public class GameManager : MonoBehaviour
 
         Selection = agents[nextAgentIndex];
         Selection.SetCurrentAbility(Ability.CastType.Move);
+
+        OnTurnEnd?.Invoke();
     }
 
     public Agent AgentAt(Cell cell)

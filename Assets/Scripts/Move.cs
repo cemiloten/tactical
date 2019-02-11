@@ -21,6 +21,12 @@ public class Move : Ability
         Reset();
     }
 
+    private void Update()
+    {
+        if (Casting)
+            UpdateMove();
+    }
+
     public override void Reset()
     {
         agent = null;
@@ -80,11 +86,24 @@ public class Move : Ability
             Path = PathMaker.AStar(source, target);
         }
 
-        return StartMoving(source);
+        if (Path.Count < 1)
+        {
+            Debug.LogError("[Path] is empty");
+            return false;
+        }
+
+        StartMoving(source);
+        return true;
     }
 
     public void MoveFromOther(List<Cell> path)
     {
+        if (path == null)
+        {
+            Debug.LogError("[path] is null");
+            return;
+        }
+
         if (Casting)
         {
             Debug.LogError("Already Casting");
@@ -99,47 +118,44 @@ public class Move : Ability
         }
     }
 
-    private bool StartMoving(Cell source)
+    private void StartMoving(Cell source)
     {
-        if (source == null)
-        {
-            Debug.LogError("[source] is null");
-            return false;
-        }
-
-        if (Path == null)
-        {
-            Debug.LogError("[Path] is null, cannot start moving");
-            return false;
-        }
-
-        if (Path.Count < 1)
-        {
-            Debug.LogError("[Path] is empty");
-            return false;
-        }
-
         Casting = true;
         source.CurrentState = Cell.State.Empty;
         agent = GameManager.Instance.AgentAt(source);
         if (agent == null)
         {
             Debug.LogErrorFormat("Did not find agent at {0}", source.Position);
-            return false;
+            return;
         }
         movementTimer = 0f;
         pathIndex = 0;
-
-        StartCoroutine(UpdateMove());
-        return true;
     }
 
-    private IEnumerator UpdateMove()
+    private void UpdateMove()
     {
-        while (pathIndex < Path.Count)
+        if (Path == null)
+        {
+            Debug.LogFormat("{0}: [Path] is null", this);
+            return;
+        }
+
+        if (pathIndex < Path.Count)
         {
             Cell current = MapManager.Instance.CellAt(agent.Position);
+            if (current == null)
+            {
+                Debug.Log("current is null");
+                return;
+            }
+
             Cell next = Path[pathIndex];
+            if (next == null)
+            {
+                Debug.Log("next is null");
+                return;
+            }
+
             transform.position = Vector3.Lerp(
                 Utilities.ToWorldPosition(current.Position, transform),
                 Utilities.ToWorldPosition(next.Position, transform),
@@ -153,9 +169,11 @@ public class Move : Ability
                 agent.Position = next.Position;
                 ++pathIndex;
             }
-            yield return null;
         }
-        FinishedMoving();
+        else
+        {
+            FinishedMoving();
+        }
     }
 
     private void FinishedMoving()

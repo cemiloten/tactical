@@ -1,6 +1,4 @@
 commit:
-    fixed move
-    fixed all abilities with correct handling of movement
 
 todo:
     implement gameplay:

@@ -13,10 +13,8 @@ public class Agent : MonoBehaviour
     {
         get
         {
-            if (abilities == null)
-                throw new NullReferenceException();
-            if (abilities.Count < 1)
-                throw new MissingComponentException();
+            if (abilities == null || abilities.Count < 1)
+                return false;
             foreach (Ability ability in abilities.Values)
                 if (ability.Casting)
                     return true;
@@ -24,9 +22,22 @@ public class Agent : MonoBehaviour
         }
     }
 
+    void OnEnable()
+    {
+        GameManager.Instance.OnTurnEnd += OnEndTurn;
+    }
+
+    void OnDisable()
+    {
+        GameManager.Instance.OnTurnEnd -= OnEndTurn;
+    }
+
     void Start()
     {
         abilities = GetAbilities();
+        if (abilities == null)
+            return;
+
         Ability ability = null;
         abilities.TryGetValue(Ability.CastType.Move, out ability);
         CurrentAbility = ability;
@@ -34,6 +45,9 @@ public class Agent : MonoBehaviour
 
     public void OnEndTurn()
     {
+        if (abilities == null)
+            return;
+
         foreach (Ability ability in abilities.Values)
         {
             ability.Reset();
@@ -45,7 +59,7 @@ public class Agent : MonoBehaviour
         Ability[] components = GetComponents<Ability>();
         if (components.Length < 1)
         {
-            Debug.LogError("No component of type [Ability] was found.");
+            Debug.LogWarningFormat("No component of type [Ability] was found on {0}", this);
             return null;
         }
         var abilities = new Dictionary<Ability.CastType, Ability>();

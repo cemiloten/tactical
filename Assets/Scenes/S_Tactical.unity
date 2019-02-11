@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657838, g: 0.49641234, b: 0.57481676, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -232,6 +232,7 @@ MonoBehaviour:
   - {fileID: 1160936408645608421, guid: 709f8ef2a9c9985448351734efa68d41, type: 3}
   - {fileID: 8911662228182176663, guid: 1e27e93248b5a684e8a4c62951657277, type: 3}
   - {fileID: 2288772474814796084, guid: 335927c4683df974792b799d1cf88de9, type: 3}
+  - {fileID: 824709366804252008, guid: ca2bea7203d54fb4ca27eef5d4c8b919, type: 3}
 --- !u!4 &234784289
 Transform:
   m_ObjectHideFlags: 0
@@ -524,8 +525,8 @@ Canvas:
   m_GameObject: {fileID: 435926711}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
+  m_RenderMode: 1
+  m_Camera: {fileID: 534669904}
   m_PlaneDistance: 100
   m_PixelPerfect: 1
   m_ReceivesEvents: 1
@@ -769,7 +770,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
   m_LocalRotation: {x: 0.5465097, y: -0, z: -0, w: 0.83745277}
-  m_LocalPosition: {x: 4, y: 7.32, z: -0.94}
+  m_LocalPosition: {x: 4, y: 7.32, z: -0.76}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
