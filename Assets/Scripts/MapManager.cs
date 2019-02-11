@@ -40,13 +40,17 @@ public class MapManager : MonoBehaviour
             {
                 index = Random.Range(0, cells.Length);
                 cell = cells[index];
-            } while (!cell.Walkable);
-            cell.CurrentState = Cell.State.Agent;
+            } while (!cell.Walkable || cell.CurrentState == Cell.State.Win);
 
-            agents[i].Position = cell.Position;
-            agents[i].transform.position = Utilities.ToWorldPosition(
-                cell.Position, agents[i].transform);
+            PlaceAgent(agents[i], cell);
         }
+    }
+
+    private void PlaceAgent(Agent agent, Cell cell)
+    {
+        cell.CurrentState = Cell.State.Agent;
+        agent.Position = cell.Position;
+        agent.transform.position = Utilities.ToWorldPosition(cell.Position, agent.transform);
     }
 
     public bool IsPositionOnMap(Vector2Int pos)
@@ -149,6 +153,10 @@ public class MapManager : MonoBehaviour
                 GameObject go = new GameObject(string.Format("[{0}, {1}]", x, y));
                 Cell cell = go.AddComponent<Cell>();
                 cell.Initialize(new Vector2Int(x, y));
+                if ((x == 0 && y == 0) || (x == width - 1 && y == height - 1))
+                {
+                    cell.CurrentState = Cell.State.Win;
+                }
                 cells[x + y * width] = cell;
             }
     }
@@ -204,25 +212,36 @@ public class MapManager : MonoBehaviour
             {
                 cells[i].Color = Color.yellow;
             }
+            else if (cells[i].CurrentState == Cell.State.Win)
+            {
+                if (cells[i].Position == new Vector2Int(0, 0))
+                {
+                    cells[i].Color = new Color(1, 0, 0.2f);
+                }
+                else
+                {
+                    cells[i].Color = new Color(0, 0.5f, 1);
+                }
+            }
             else
             {
                 cells[i].Color = new Color(1, 0.7f, 0);
             }
+        }
 
-            if (VisualPath != null)
+        if (VisualPath != null)
+        {
+            for (int j = 0; j < VisualPath.Count; ++j)
             {
-                for (int j = 0; j < VisualPath.Count; ++j)
-                {
-                    if (VisualPath[j] != null)
-                        VisualPath[j].Color = Color.green;
-                }
+                if (VisualPath[j] != null)
+                    VisualPath[j].Color = Color.green;
             }
+        }
 
-            Agent selection = GameManager.Instance.Selection;
-            if (selection != null)
-            {
-                CellAt(selection.Position).Color = Color.blue;
-            }
+        Agent selection = GameManager.Instance.Selection;
+        if (selection != null)
+        {
+            CellAt(selection.Position).Color = Color.black;
         }
     }
 }

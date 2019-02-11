@@ -6,9 +6,10 @@ public class Cell : MonoBehaviour
 {
     public enum State
     {
-        Empty    = 0,
-        Agent    = 1,
-        Obstacle = 2
+        Empty,
+        Agent,
+        Obstacle,
+        Win
     }
 
     public Vector2Int Position { get; private set; }
@@ -29,7 +30,6 @@ public class Cell : MonoBehaviour
         Gizmos.color = Color;
         Gizmos.DrawCube(transform.position, new Vector3(0.95f, 0.01f, 0.95f));
     }
-
 
     public override bool Equals(object obj)
     {
