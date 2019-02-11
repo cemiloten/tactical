@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class MapManager : MonoBehaviour
 {
-    public int width;
-    public int height;
+    public MapLayout layout;
+    public GameObject colliderPrefab;
 
     private Cell[] cells;
 
@@ -20,6 +20,7 @@ public class MapManager : MonoBehaviour
             if (Instance != this)
             Destroy(this);
 
+        SetupColliderPlane();
         InstantiateCells();
     }
 
@@ -27,6 +28,16 @@ public class MapManager : MonoBehaviour
     {
         DrawMap();
         UpdateVisualPath();
+    }
+
+    private void SetupColliderPlane()
+    {
+        GameObject collider = Instantiate(
+            colliderPrefab,
+            new Vector3(layout.width / 2f, 0f, layout.height / 2f),
+            Quaternion.identity);
+        collider.transform.localScale = new Vector3(layout.width / 10f, 1f, layout.height / 10f);
+        collider.transform.parent = transform;
     }
 
     public void PlaceAgents(Agent[] agents)
@@ -55,7 +66,7 @@ public class MapManager : MonoBehaviour
 
     public bool IsPositionOnMap(Vector2Int pos)
     {
-        return (pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height);
+        return (pos.x >= 0 && pos.x < layout.width && pos.y >= 0 && pos.y < layout.height);
     }
 
     public bool AreNeighbours(Cell c1, Cell c2)
@@ -89,7 +100,7 @@ public class MapManager : MonoBehaviour
         if (!IsPositionOnMap(pos))
             return null;
 
-        return cells[pos.x + pos.y * width];
+        return cells[pos.x + pos.y * layout.width];
     }
 
     public Cell CellAt(int x, int y)
@@ -146,32 +157,32 @@ public class MapManager : MonoBehaviour
 
     private void InstantiateCells()
     {
-        cells = new Cell[width * height];
-        for (int y = 0; y < height; ++y)
-            for (int x = 0; x < width; ++x)
+        cells = new Cell[layout.width * layout.height];
+        for (int y = 0; y < layout.height; ++y)
+            for (int x = 0; x < layout.width; ++x)
             {
                 GameObject go = new GameObject(string.Format("[{0}, {1}]", x, y));
                 Cell cell = go.AddComponent<Cell>();
                 cell.Initialize(new Vector2Int(x, y));
-                if ((x == 0 && y == 0) || (x == width - 1 && y == height - 1))
+                if ((x == 0 && y == 0) || (x == layout.width - 1 && y == layout.height - 1))
                 {
                     cell.CurrentState = Cell.State.Win;
                 }
-                cells[x + y * width] = cell;
+                cells[x + y * layout.width] = cell;
             }
     }
 
     private void DrawMap()
     {
-        Vector3 widthLine = Vector3.right * width;
-        Vector3 heightLine = Vector3.forward * height;
+        Vector3 widthLine = Vector3.right * layout.width;
+        Vector3 heightLine = Vector3.forward * layout.height;
 
-        for (int z = 0; z <= width; ++z)
+        for (int z = 0; z <= layout.width; ++z)
         {
             Vector3 start = Vector3.forward * z;
             Debug.DrawLine(start, start + widthLine);
 
-            for (int x = 0; x <= width; ++x)
+            for (int x = 0; x <= layout.width; ++x)
             {
                 start = Vector3.right * x;
                 Debug.DrawLine(start, start + heightLine);

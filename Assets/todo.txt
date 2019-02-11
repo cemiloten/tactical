@@ -1,7 +1,4 @@
 commit:
 
 todo:
-    implement gameplay:
-        winning spot
-        flag
-        orient agents depending on their last actions/movements
+    read from layout to create map at the start of a game
