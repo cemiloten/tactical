@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class MapManager : MonoBehaviour
 {
@@ -72,7 +74,7 @@ public class MapManager : MonoBehaviour
             {
                 index = Random.Range(0, cells.Length);
                 cell = cells[index];
-            } while (!cell.Walkable || cell.CurrentState == Cell.State.Win);
+            } while (!cell.Walkable || cell.CurrentState == Cell.State.Hole);
 
             PlaceAgent(agents[i], cell);
         }
@@ -185,9 +187,11 @@ public class MapManager : MonoBehaviour
                 GameObject go = new GameObject(string.Format("[{0}, {1}]", x, y));
                 Cell cell = go.AddComponent<Cell>();
                 cell.Initialize(new Vector2Int(x, y));
-                if (GameManager.Instance.mapLayout.winningPositions.Contains(new Vector2Int(x, y)))
+                if (Array.Exists(
+                    GameManager.Instance.mapLayout.winningPositions,
+                    element => element == new Vector2Int(x, y)))
                 {
-                    cell.CurrentState = Cell.State.Win;
+                    cell.CurrentState = Cell.State.Hole;
                 }
                 cells[x + y * width] = cell;
             }
@@ -240,11 +244,11 @@ public class MapManager : MonoBehaviour
 
         for (int i = 0; i < cells.Length; ++i)
         {
-            if (cells[i].Walkable)
+            if (cells[i].CurrentState == Cell.State.Empty)
             {
                 cells[i].Color = Color.yellow;
             }
-            else if (cells[i].CurrentState == Cell.State.Win)
+            else if (cells[i].CurrentState == Cell.State.Hole)
             {
                 cells[i].Color = Color.white;
             }

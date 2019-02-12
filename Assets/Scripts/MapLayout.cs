@@ -22,5 +22,5 @@ public class MapLayout : ScriptableObject
 
     public AgentWithPosition[] agents;
 
-    public List<Vector2Int> winningPositions;
+    public Vector2Int[] winningPositions;
 }

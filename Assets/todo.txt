@@ -1,5 +1,8 @@
 commit:
+    agent death callback (agent gives itself to manager)
 
 todo:
-    agent death callback (agent gives itself to manager)
-    do static event, look at c3monobehaviour, c3gamemanager for inspiration
+    hole should kill while moving, not only at end of turn
+    add next agent button
+    when no more movement points, automatically set current ability to action
+    differentiate visual range between move and action

@@ -41,10 +41,34 @@ public class GameManager : MonoBehaviour
             if (agents == null)
                 throw new NullReferenceException();
             for (int a = 0; a < agents.Length; ++a)
-                if (agents[a].Busy)
+                if (agents[a] != null && agents[a].Busy)
                     return true;
             return false;
         }
+    }
+
+    void OnEnable()
+    {
+        Agent.OnAgentDead += OnAgentDead;
+    }
+
+    void OnAgentDead(Agent agent)
+    {
+        MapManager.Instance.CellAt(agent.Position).CurrentState = Cell.State.Hole;
+        agent.gameObject.SetActive(false);
+        int index = 0;
+        for (int i = 0; i < agents.Length; ++i)
+        {
+            if (agents[i] != null && agents[i] == agent)
+            {
+                index = i;
+                agents[i] = null;
+                break;
+            }
+        }
+
+        deadAgents[index] = agent;
+        Debug.LogFormat("Receiving agent dead callback from {0}", agent);
     }
 
     void Awake()
@@ -52,7 +76,7 @@ public class GameManager : MonoBehaviour
         if (Instance == null)
             Instance = this;
         else if (Instance != this)
-                Destroy(this);
+            Destroy(this);
 
         moveButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Move); });
         actionButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Action); });
@@ -122,8 +146,14 @@ public class GameManager : MonoBehaviour
 
     private Agent NextAgent()
     {
+        // todo: refactor
+        int nextPlayerIndex = currentPlayer * (agents.Length / 2);
         nextAgentIndex = (nextAgentIndex + 1) % (agents.Length / 2);
-        return agents[currentPlayer * (agents.Length / 2) + nextAgentIndex];
+        while (agents[nextPlayerIndex + nextAgentIndex] == null)
+        {
+            nextAgentIndex = (nextAgentIndex + 1) % (agents.Length / 2);
+        }
+        return agents[nextPlayerIndex + nextAgentIndex];
     }
 
     private void ButtonToEndTurn()
@@ -133,10 +163,9 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator EndTurn()
     {
+        // Don't execute cleanup code if agents are casting/moving
         while (HasBusyAgent)
-        {
             yield return null;
-        }
 
         MapManager.Instance.VisualPath = null;
         currentPlayer = (currentPlayer + 1) % playerCount;
@@ -156,6 +185,9 @@ public class GameManager : MonoBehaviour
 
         for (int i = 0; i < agents.Length; ++i)
         {
+            if (agents[i] == null)
+                continue;
+
             if (MapManager.Instance.CellAt(cell.Position) != null
                 && MapManager.Instance.CellAt(cell.Position) == cell
                 && cell.Position == agents[i].Position)

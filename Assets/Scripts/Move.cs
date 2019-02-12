@@ -74,7 +74,7 @@ public class Move : Ability
             return false;
         }
 
-        if (target.CurrentState != Cell.State.Empty)
+        if (!target.Walkable)
         {
             Debug.LogErrorFormat("Cannot move to cell with state '{0}'", target.CurrentState);
             return false;
@@ -82,7 +82,7 @@ public class Move : Ability
 
         if (Path == null)
         {
-            Debug.Log("[Path] is null, finding fastest path with AStar");
+            Debug.Log("[Path] is null, finding closest path with AStar");
             Path = PathMaker.AStar(source, target);
         }
 

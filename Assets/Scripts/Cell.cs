@@ -9,13 +9,13 @@ public class Cell : MonoBehaviour
         Empty,
         Agent,
         Obstacle,
-        Win
+        Hole
     }
 
     public Color Color { get; set; }
     public State CurrentState { get; set; }
     public Vector2Int Position { get; private set; }
-    public bool Walkable { get { return CurrentState == State.Empty; } }
+    public bool Walkable { get { return CurrentState == State.Empty || CurrentState == State.Hole; } }
 
     public void Initialize(Vector2Int pos, State state = State.Empty)
     {

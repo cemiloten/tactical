@@ -12,7 +12,8 @@ public class Agent : MonoBehaviour
         Swapper,
         Heart
     }
-    public delegate Agent OnAgentDeadHandler();
+
+    public delegate void OnAgentDeadHandler(Agent agent);
     public static event OnAgentDeadHandler OnAgentDead;
 
     private Dictionary<Ability.CastType, Ability> abilities;
@@ -62,11 +63,23 @@ public class Agent : MonoBehaviour
         {
             ability.Reset();
         }
+
+        Vector2Int[] positions = GameManager.Instance.mapLayout.winningPositions;
+        for (int i = 0; i < positions.Length; ++i)
+        {
+            if (positions[i] == Position)
+                Die();
+        }
     }
 
-    public Agent OnDead()
+    public void Die()
     {
-        return this;
+        if (OnAgentDead == null)
+        {
+            Debug.LogError("[OnAgentDead] is null");
+            return;
+        }
+        OnAgentDead(this);
     }
 
     private Dictionary<Ability.CastType, Ability> GetAbilities()
