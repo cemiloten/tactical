@@ -5,6 +5,16 @@ using UnityEngine;
 
 public class Agent : MonoBehaviour
 {
+    public enum Type
+    {
+        Pusher,
+        Puller,
+        Swapper,
+        Heart
+    }
+    public delegate Agent OnAgentDeadHandler();
+    public static event OnAgentDeadHandler OnAgentDead;
+
     private Dictionary<Ability.CastType, Ability> abilities;
 
     public Vector2Int Position { get; set; }
@@ -24,12 +34,12 @@ public class Agent : MonoBehaviour
 
     void OnEnable()
     {
-        GameManager.Instance.OnTurnEnd += OnEndTurn;
+        GameManager.Instance.OnEndTurn += OnEndTurn;
     }
 
     void OnDisable()
     {
-        GameManager.Instance.OnTurnEnd -= OnEndTurn;
+        GameManager.Instance.OnEndTurn -= OnEndTurn;
     }
 
     void Start()
@@ -52,6 +62,11 @@ public class Agent : MonoBehaviour
         {
             ability.Reset();
         }
+    }
+
+    public Agent OnDead()
+    {
+        return this;
     }
 
     private Dictionary<Ability.CastType, Ability> GetAbilities()

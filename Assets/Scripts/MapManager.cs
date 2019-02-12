@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class MapManager : MonoBehaviour
 {
-    public MapLayout layout;
     public GameObject colliderPrefab;
 
+    private int width;
+    private int height;
+    private MapLayout mapLayout;
     private Cell[] cells;
 
     public static MapManager Instance { get; private set; }
@@ -16,10 +18,14 @@ public class MapManager : MonoBehaviour
     {
         if (Instance == null)
             Instance = this;
-        else
-            if (Instance != this)
+        else if (Instance != this)
             Destroy(this);
+    }
 
+    public void Initialize(MapLayout mapLayout)
+    {
+        width = mapLayout.width;
+        height = mapLayout.height;
         SetupColliderPlane();
         InstantiateCells();
     }
@@ -34,10 +40,25 @@ public class MapManager : MonoBehaviour
     {
         GameObject collider = Instantiate(
             colliderPrefab,
-            new Vector3(layout.width / 2f, 0f, layout.height / 2f),
+            new Vector3(width / 2f, 0f, height / 2f),
             Quaternion.identity);
-        collider.transform.localScale = new Vector3(layout.width / 10f, 1f, layout.height / 10f);
+        collider.transform.localScale = new Vector3(width / 10f, 1f, height / 10f);
         collider.transform.parent = transform;
+    }
+
+    public void PlaceAgentsFromLayout(MapLayout mapLayout, Agent[] agents)
+    {
+        if (mapLayout == null)
+        {
+            Debug.LogError("[layout] is null");
+            return;
+        }
+
+        for (int a = 0; a < mapLayout.agents.Length; ++a)
+        {
+            // todo: check array bounds
+            PlaceAgent(agents[a], CellAt(mapLayout.agents[a].position));
+        }
     }
 
     public void PlaceAgents(Agent[] agents)
@@ -66,7 +87,7 @@ public class MapManager : MonoBehaviour
 
     public bool IsPositionOnMap(Vector2Int pos)
     {
-        return (pos.x >= 0 && pos.x < layout.width && pos.y >= 0 && pos.y < layout.height);
+        return (pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height);
     }
 
     public bool AreNeighbours(Cell c1, Cell c2)
@@ -100,7 +121,7 @@ public class MapManager : MonoBehaviour
         if (!IsPositionOnMap(pos))
             return null;
 
-        return cells[pos.x + pos.y * layout.width];
+        return cells[pos.x + pos.y * width];
     }
 
     public Cell CellAt(int x, int y)
@@ -157,32 +178,32 @@ public class MapManager : MonoBehaviour
 
     private void InstantiateCells()
     {
-        cells = new Cell[layout.width * layout.height];
-        for (int y = 0; y < layout.height; ++y)
-            for (int x = 0; x < layout.width; ++x)
+        cells = new Cell[width * height];
+        for (int y = 0; y < height; ++y)
+            for (int x = 0; x < width; ++x)
             {
                 GameObject go = new GameObject(string.Format("[{0}, {1}]", x, y));
                 Cell cell = go.AddComponent<Cell>();
                 cell.Initialize(new Vector2Int(x, y));
-                if ((x == 0 && y == 0) || (x == layout.width - 1 && y == layout.height - 1))
+                if (GameManager.Instance.mapLayout.winningPositions.Contains(new Vector2Int(x, y)))
                 {
                     cell.CurrentState = Cell.State.Win;
                 }
-                cells[x + y * layout.width] = cell;
+                cells[x + y * width] = cell;
             }
     }
 
     private void DrawMap()
     {
-        Vector3 widthLine = Vector3.right * layout.width;
-        Vector3 heightLine = Vector3.forward * layout.height;
+        Vector3 widthLine = Vector3.right * width;
+        Vector3 heightLine = Vector3.forward * height;
 
-        for (int z = 0; z <= layout.width; ++z)
+        for (int z = 0; z <= width; ++z)
         {
             Vector3 start = Vector3.forward * z;
             Debug.DrawLine(start, start + widthLine);
 
-            for (int x = 0; x <= layout.width; ++x)
+            for (int x = 0; x <= width; ++x)
             {
                 start = Vector3.right * x;
                 Debug.DrawLine(start, start + heightLine);
@@ -225,14 +246,7 @@ public class MapManager : MonoBehaviour
             }
             else if (cells[i].CurrentState == Cell.State.Win)
             {
-                if (cells[i].Position == new Vector2Int(0, 0))
-                {
-                    cells[i].Color = new Color(1, 0, 0.2f);
-                }
-                else
-                {
-                    cells[i].Color = new Color(0, 0.5f, 1);
-                }
+                cells[i].Color = Color.white;
             }
             else
             {

@@ -14,14 +14,23 @@ public class GameManager : MonoBehaviour
     public Material red;
     public Material blue;
     public int playerCount = 2;
-    public GameObject[] agentsPrefabs;
+    public MapLayout mapLayout;
 
-    public delegate void OnTurnEndHandler();
-    public event OnTurnEndHandler OnTurnEnd;
+    [Serializable]
+    public struct AgentWithType
+    {
+        public Agent.Type type;
+        public GameObject prefab;
+    }
+    public AgentWithType[] agentsWithTypes;
+
+    public delegate void OnEndTurnHandler();
+    public event OnEndTurnHandler OnEndTurn;
 
     private int currentPlayer = 0;
     private int nextAgentIndex = 0;
     private Agent[] agents;
+    private Agent[] deadAgents;
 
     public Agent Selection { get; private set; }
     public static GameManager Instance { get; private set; }
@@ -42,19 +51,22 @@ public class GameManager : MonoBehaviour
     {
         if (Instance == null)
             Instance = this;
-        else
-            if (Instance != this)
-            Destroy(this);
+        else if (Instance != this)
+                Destroy(this);
 
         moveButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Move); });
         actionButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Action); });
         endTurnButton.onClick.AddListener(ButtonToEndTurn);
-        InstantiateAgents();
+
+        deadAgents = new Agent[mapLayout.agents.Length];
+        InstantiateAgentsFromLayout();
     }
 
     void Start()
     {
-        MapManager.Instance.PlaceAgents(agents);
+        MapManager.Instance.Initialize(mapLayout);
+        MapManager.Instance.PlaceAgentsFromLayout(mapLayout, agents);
+
         Selection = agents[nextAgentIndex];
     }
 
@@ -110,10 +122,9 @@ public class GameManager : MonoBehaviour
 
     private Agent NextAgent()
     {
-        nextAgentIndex = (nextAgentIndex + 1) % agentsPrefabs.Length;
-        return agents[currentPlayer * agentsPrefabs.Length + nextAgentIndex];
+        nextAgentIndex = (nextAgentIndex + 1) % (agents.Length / 2);
+        return agents[currentPlayer * (agents.Length / 2) + nextAgentIndex];
     }
-
 
     private void ButtonToEndTurn()
     {
@@ -129,12 +140,10 @@ public class GameManager : MonoBehaviour
 
         MapManager.Instance.VisualPath = null;
         currentPlayer = (currentPlayer + 1) % playerCount;
-        nextAgentIndex = currentPlayer * agentsPrefabs.Length;
-
-        Selection = agents[nextAgentIndex];
+        Selection = NextAgent();
         Selection.SetCurrentAbility(Ability.CastType.Move);
 
-        OnTurnEnd?.Invoke();
+        OnEndTurn?.Invoke();
     }
 
     public Agent AgentAt(Cell cell)
@@ -158,27 +167,36 @@ public class GameManager : MonoBehaviour
         return null;
     }
 
-    private void InstantiateAgents()
+    private GameObject TypeToPrefab(Agent.Type type)
     {
-        agents = new Agent[playerCount * agentsPrefabs.Length];
-        for (int i = 0; i < playerCount * agentsPrefabs.Length; ++i)
+        for (int i = 0; i < agentsWithTypes.Length; ++i)
         {
-            int index = i % agentsPrefabs.Length;
-            GameObject go = Instantiate(agentsPrefabs[index]) as GameObject;
-            string name;
-            Material m;
-            if (i < agentsPrefabs.Length)
+            if (agentsWithTypes[i].type == type)
             {
-                m = red;
-                name = "Red";
+                return agentsWithTypes[i].prefab;
             }
-            else
+        }
+        Debug.LogErrorFormat("Didn't find prefab of type {0}", type);
+        return null;
+    }
+
+    private void InstantiateAgentsFromLayout()
+    {
+        agents = new Agent[mapLayout.agents.Length];
+        for (int i = 0; i < agents.Length; ++i)
+        {
+            GameObject prefab = TypeToPrefab(mapLayout.agents[i].type);
+            if (prefab == null)
             {
-                m = blue;
-                name = "Blue";
+                Debug.LogErrorFormat("Didn't find prefab of type {0}", mapLayout.agents[i].type);
+                return;
             }
-            go.GetComponent<Renderer>().sharedMaterial = m;
-            go.name = string.Format("{0} - {1}", agentsPrefabs[index].name, name);
+
+            GameObject go = Instantiate(
+                prefab,
+                Utilities.ToWorldPosition(mapLayout.agents[i].position),
+                Quaternion.identity);
+            go.GetComponent<Renderer>().sharedMaterial = i < agents.Length / 2 ? blue : red;
             agents[i] = go.GetComponent<Agent>();
         }
     }

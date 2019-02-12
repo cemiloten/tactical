@@ -12,10 +12,10 @@ public class Cell : MonoBehaviour
         Win
     }
 
-    public Vector2Int Position { get; private set; }
-    public State CurrentState { get; set; }
-    public bool Walkable { get { return CurrentState == State.Empty; } }
     public Color Color { get; set; }
+    public State CurrentState { get; set; }
+    public Vector2Int Position { get; private set; }
+    public bool Walkable { get { return CurrentState == State.Empty; } }
 
     public void Initialize(Vector2Int pos, State state = State.Empty)
     {

@@ -1,4 +1,5 @@
 commit:
 
 todo:
-    read from layout to create map at the start of a game
+    agent death callback (agent gives itself to manager)
+    do static event, look at c3monobehaviour, c3gamemanager for inspiration

@@ -6,19 +6,21 @@ using UnityEngine;
 public class MapLayout : ScriptableObject
 {
     [System.Serializable]
-    public struct AgentWithPositions
+    public struct AgentWithPosition
     {
-        public GameObject agentPrefab;
-        public List<Vector2Int> positions;
+        public Agent.Type type;
+
+        [Range(0, 1)]
+        public int team;
+
+        public Vector2Int position;
     }
 
     public int width;
-    public int height;
-    public bool mirrorX;
-    public bool mirrorY;
 
-    public AgentWithPositions pusher;
-    public AgentWithPositions puller;
-    public AgentWithPositions swapper;
-    public AgentWithPositions heart;
+    public int height;
+
+    public AgentWithPosition[] agents;
+
+    public List<Vector2Int> winningPositions;
 }
