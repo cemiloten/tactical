@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     public Text currentSelection;
     public Button moveButton;
     public Button actionButton;
+    public Button nextAgentButton;
     public Button endTurnButton;
     public Material red;
     public Material blue;
@@ -52,25 +53,6 @@ public class GameManager : MonoBehaviour
         Agent.OnAgentDead += OnAgentDead;
     }
 
-    void OnAgentDead(Agent agent)
-    {
-        MapManager.Instance.CellAt(agent.Position).CurrentState = Cell.State.Hole;
-        agent.gameObject.SetActive(false);
-        int index = 0;
-        for (int i = 0; i < agents.Length; ++i)
-        {
-            if (agents[i] != null && agents[i] == agent)
-            {
-                index = i;
-                agents[i] = null;
-                break;
-            }
-        }
-
-        deadAgents[index] = agent;
-        Debug.LogFormat("Receiving agent dead callback from {0}", agent);
-    }
-
     void Awake()
     {
         if (Instance == null)
@@ -81,6 +63,7 @@ public class GameManager : MonoBehaviour
         moveButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Move); });
         actionButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Action); });
         endTurnButton.onClick.AddListener(ButtonToEndTurn);
+        nextAgentButton.onClick.AddListener(SelectNextAgent);
 
         deadAgents = new Agent[mapLayout.agents.Length];
         InstantiateAgentsFromLayout();
@@ -104,7 +87,7 @@ public class GameManager : MonoBehaviour
         Utilities.MousePos(out mousePos);
 
         if (Input.GetKeyDown(KeyCode.Tab))
-            Selection = NextAgent();
+            SelectNextAgent();
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
             SetCurrentAbility(Ability.CastType.Move);
@@ -133,6 +116,24 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void OnAgentDead(Agent agent)
+    {
+        Debug.LogFormat("Receiving agent dead callback from {0}", agent);
+        MapManager.Instance.CellAt(agent.Position).CurrentState = Cell.State.Hole;
+        agent.gameObject.SetActive(false);
+        int index = 0;
+        for (int i = 0; i < agents.Length; ++i)
+        {
+            if (agents[i] != null && agents[i] == agent)
+            {
+                index = i;
+                agents[i] = null;
+                break;
+            }
+        }
+        deadAgents[index] = agent;
+    }
+
     public void SetCurrentAbility(Ability.CastType type)
     {
         if (Selection != null
@@ -144,7 +145,7 @@ public class GameManager : MonoBehaviour
         Selection.SetCurrentAbility(type);
     }
 
-    private Agent NextAgent()
+    public void SelectNextAgent()
     {
         // todo: refactor
         int nextPlayerIndex = currentPlayer * (agents.Length / 2);
@@ -153,7 +154,7 @@ public class GameManager : MonoBehaviour
         {
             nextAgentIndex = (nextAgentIndex + 1) % (agents.Length / 2);
         }
-        return agents[nextPlayerIndex + nextAgentIndex];
+        Selection = agents[nextPlayerIndex + nextAgentIndex];
     }
 
     private void ButtonToEndTurn()
@@ -169,7 +170,7 @@ public class GameManager : MonoBehaviour
 
         MapManager.Instance.VisualPath = null;
         currentPlayer = (currentPlayer + 1) % playerCount;
-        Selection = NextAgent();
+        SelectNextAgent();
         Selection.SetCurrentAbility(Ability.CastType.Move);
 
         OnEndTurn?.Invoke();
@@ -224,10 +225,7 @@ public class GameManager : MonoBehaviour
                 return;
             }
 
-            GameObject go = Instantiate(
-                prefab,
-                Utilities.ToWorldPosition(mapLayout.agents[i].position),
-                Quaternion.identity);
+            GameObject go = Instantiate(prefab);
             go.GetComponent<Renderer>().sharedMaterial = i < agents.Length / 2 ? blue : red;
             agents[i] = go.GetComponent<Agent>();
         }

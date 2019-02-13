@@ -174,6 +174,16 @@ public class Move : Ability
         {
             FinishedMoving();
         }
+
+        if (agent != null && MapManager.Instance.CellAt(agent.Position).CurrentState == Cell.State.Hole)
+        {
+            FinishedMoving();
+            if (agent == GameManager.Instance.Selection)
+            {
+                agent.Die();
+                GameManager.Instance.SelectNextAgent();
+            }
+        }
     }
 
     private void FinishedMoving()

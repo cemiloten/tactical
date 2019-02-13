@@ -48,6 +48,13 @@ public class MapManager : MonoBehaviour
         collider.transform.parent = transform;
     }
 
+    private void PlaceAgent(Agent agent, Cell cell)
+    {
+        cell.CurrentState = Cell.State.Agent;
+        agent.Position = cell.Position;
+        agent.transform.position = Utilities.ToWorldPosition(cell.Position, agent.transform);
+    }
+
     public void PlaceAgentsFromLayout(MapLayout mapLayout, Agent[] agents)
     {
         if (mapLayout == null)
@@ -78,13 +85,6 @@ public class MapManager : MonoBehaviour
 
             PlaceAgent(agents[i], cell);
         }
-    }
-
-    private void PlaceAgent(Agent agent, Cell cell)
-    {
-        cell.CurrentState = Cell.State.Agent;
-        agent.Position = cell.Position;
-        agent.transform.position = Utilities.ToWorldPosition(cell.Position, agent.transform);
     }
 
     public bool IsPositionOnMap(Vector2Int pos)
