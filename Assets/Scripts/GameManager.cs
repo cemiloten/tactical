@@ -74,14 +74,32 @@ public class GameManager : MonoBehaviour
         MapManager.Instance.Initialize(mapLayout);
         MapManager.Instance.PlaceAgentsFromLayout(mapLayout, agents);
 
-        Selection = agents[nextAgentIndex];
+SelectNextAgent();
     }
 
     void Update()
     {
-        currentTurn.text = string.Format("Turn {0}", nextAgentIndex / agents.Length);
+        currentTurn.text = string.Format("Turn {0}", 0);
         if (Selection != null && Selection.CurrentAbility != null)
             currentSelection.text = string.Format("{0}\n {1}", Selection, Selection.CurrentAbility.Type);
+        if (Selection.CurrentAbility == null)
+        {
+            moveButton.GetComponent<Image>().color = Color.white;
+            actionButton.GetComponent<Image>().color = Color.white;
+        }
+        else
+        {
+            if (Selection.CurrentAbility.Type == Ability.CastType.Move)
+            {
+                moveButton.GetComponent<Image>().color = Color.green;
+                actionButton.GetComponent<Image>().color = Color.white;
+            }
+            else if (Selection.CurrentAbility.Type == Ability.CastType.Action)
+            {
+                moveButton.GetComponent<Image>().color = Color.white;
+                actionButton.GetComponent<Image>().color = Color.magenta;
+            }
+        }
 
         Vector2Int mousePos;
         Utilities.MousePos(out mousePos);
@@ -148,9 +166,11 @@ public class GameManager : MonoBehaviour
     public void SelectNextAgent()
     {
         // todo: refactor
+        // todo: if only heart is left, infinite loop
         int nextPlayerIndex = currentPlayer * (agents.Length / 2);
         nextAgentIndex = (nextAgentIndex + 1) % (agents.Length / 2);
-        while (agents[nextPlayerIndex + nextAgentIndex] == null)
+        while (agents[nextPlayerIndex + nextAgentIndex] == null
+            || agents[nextPlayerIndex + nextAgentIndex].type == Agent.Type.Heart)
         {
             nextAgentIndex = (nextAgentIndex + 1) % (agents.Length / 2);
         }

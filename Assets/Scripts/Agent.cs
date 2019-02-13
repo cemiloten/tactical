@@ -13,6 +13,8 @@ public class Agent : MonoBehaviour
         Heart
     }
 
+    public Type type;
+
     public delegate void OnAgentDeadHandler(Agent agent);
     public static event OnAgentDeadHandler OnAgentDead;
 

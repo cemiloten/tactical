@@ -226,20 +226,20 @@ public class MapManager : MonoBehaviour
             return;
         }
 
-        Agent agent = GameManager.Instance.Selection;
-        if (agent == null)
+        Agent selection = GameManager.Instance.Selection;
+        if (selection == null)
             return;
 
-        if (agent.CurrentAbility == null
-            || agent.CurrentAbility.Type == Ability.CastType.None
-            || agent.Busy)
+        if (selection.CurrentAbility == null
+            || selection.CurrentAbility.Type == Ability.CastType.None
+            || selection.Busy)
         {
             VisualPath = null;
         }
         else
         {
-            VisualPath = agent.CurrentAbility.Range(
-                MapManager.Instance.CellAt(agent.Position));
+            VisualPath = selection.CurrentAbility.Range(
+                MapManager.Instance.CellAt(selection.Position));
         }
 
         for (int i = 0; i < cells.Length; ++i)
@@ -250,7 +250,7 @@ public class MapManager : MonoBehaviour
             }
             else if (cells[i].CurrentState == Cell.State.Hole)
             {
-                cells[i].Color = Color.white;
+                cells[i].Color = Color.black;
             }
             else
             {
@@ -262,15 +262,12 @@ public class MapManager : MonoBehaviour
         {
             for (int j = 0; j < VisualPath.Count; ++j)
             {
-                if (VisualPath[j] != null)
-                    VisualPath[j].Color = Color.green;
+                Color rangeColor = selection.CurrentAbility.Type == Ability.CastType.Move ? Color.green : Color.magenta;
+                if (VisualPath[j] != null && VisualPath[j].CurrentState != Cell.State.Hole)
+                    VisualPath[j].Color = rangeColor;
             }
         }
 
-        Agent selection = GameManager.Instance.Selection;
-        if (selection != null)
-        {
-            CellAt(selection.Position).Color = Color.black;
-        }
+        CellAt(selection.Position).Color = Color.white;
     }
 }
