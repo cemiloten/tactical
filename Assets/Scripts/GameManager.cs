@@ -30,6 +30,7 @@ public class GameManager : MonoBehaviour
 
     private int currentPlayer = 0;
     private int nextAgentIndex = 0;
+    private bool selectionLocked = false;
     private Agent[] agents;
     private Agent[] deadAgents;
 
@@ -48,11 +49,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void OnEnable()
-    {
-        Agent.OnAgentDead += OnAgentDead;
-    }
-
     void Awake()
     {
         if (Instance == null)
@@ -69,12 +65,15 @@ public class GameManager : MonoBehaviour
         InstantiateAgentsFromLayout();
     }
 
+    void OnEnable()
+    {
+        Agent.OnAgentDead += OnAgentDead;
+    }
+
     void Start()
     {
-        MapManager.Instance.Initialize(mapLayout);
         MapManager.Instance.PlaceAgentsFromLayout(mapLayout, agents);
-
-SelectNextAgent();
+        SelectNextAgent();
     }
 
     void Update()
@@ -102,10 +101,12 @@ SelectNextAgent();
         }
 
         Vector2Int mousePos;
-        Utilities.MousePos(out mousePos);
+        Utilities.MousePositionOnMap(out mousePos);
 
         if (Input.GetKeyDown(KeyCode.Tab))
+        {
             SelectNextAgent();
+        }
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
             SetCurrentAbility(Ability.CastType.Move);
@@ -120,15 +121,22 @@ SelectNextAgent();
             && Selection.CurrentAbility.Type != Ability.CastType.None)
         {
             if (MapManager.Instance.VisualPath == null)
-                Debug.Log("visual path null");
+                Debug.LogFormat("Visual path is null, cannot cast {0}", Selection.CurrentAbility.Type);
             else if (MapManager.Instance.VisualPath.Contains(MapManager.Instance.CellAt(mousePos)))
             {
                 bool cast = Selection.CurrentAbility.Cast(
                     MapManager.Instance.CellAt(Selection.Position),
                     MapManager.Instance.CellAt(mousePos));
-                if (Selection.CurrentAbility.Type == Ability.CastType.Action && cast)
+                if (cast)
                 {
-                    StartCoroutine(EndTurn());
+                    if (Selection.CurrentAbility.Type == Ability.CastType.Move)
+                    {
+                        selectionLocked = true;
+                    }
+                    else if (Selection.CurrentAbility.Type == Ability.CastType.Action)
+                    {
+                        StartCoroutine(EndTurn());
+                    }
                 }
             }
         }
@@ -166,7 +174,13 @@ SelectNextAgent();
     public void SelectNextAgent()
     {
         // todo: refactor
-        // todo: if only heart is left, infinite loop
+        // note: if only heart is left, infinite loop
+        if (selectionLocked)
+        {
+            Debug.Log("Selection is locked, cannot select next agent");
+            return;
+        }
+
         int nextPlayerIndex = currentPlayer * (agents.Length / 2);
         nextAgentIndex = (nextAgentIndex + 1) % (agents.Length / 2);
         while (agents[nextPlayerIndex + nextAgentIndex] == null
@@ -189,6 +203,7 @@ SelectNextAgent();
             yield return null;
 
         MapManager.Instance.VisualPath = null;
+        selectionLocked = false;
         currentPlayer = (currentPlayer + 1) % playerCount;
         SelectNextAgent();
         Selection.SetCurrentAbility(Ability.CastType.Move);

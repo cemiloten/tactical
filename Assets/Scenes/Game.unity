@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44658, g: 0.49641365, b: 0.5748173, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -407,7 +407,7 @@ Light:
   m_SpotAngle: 30
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 0
+    m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -436,13 +436,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 338498736}
-  m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
+  m_LocalRotation: {x: 0.38098356, y: 0.39226022, z: -0.1829139, w: 0.8170226}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
-  m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+  m_LocalEulerAnglesHint: {x: 50.000004, y: 51.292004, z: 0}
 --- !u!1 &435926711
 GameObject:
   m_ObjectHideFlags: 0
@@ -921,7 +921,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c889b8a4663665e408a494e39a792a4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mapLayout: {fileID: 11400000, guid: 8dc225957a9f84ba385a4264cd276fa5, type: 2}
   colliderPrefab: {fileID: 3340921959608702414, guid: e0e251672306d42459a7529334065c35,
+    type: 3}
+  cellPrefab: {fileID: 1606679475906566052, guid: 594784a45ec755f4190e8af3687fea20,
     type: 3}
 --- !u!4 &752816574
 Transform:

@@ -17,18 +17,19 @@ public class Cell : MonoBehaviour
     public Vector2Int Position { get; private set; }
     public bool Walkable { get { return CurrentState == State.Empty || CurrentState == State.Hole; } }
 
-    public void Initialize(Vector2Int pos, State state = State.Empty)
+    public void Initialize(Vector2Int pos)
     {
         Position = pos;
-        CurrentState = state;
-        gameObject.transform.position = Utilities.ToWorldPosition(pos);
-        Color = Color.yellow;
+        CurrentState = State.Empty;
+        transform.position = Utilities.ToWorldPosition(pos, transform);
+        Color = new Color(0, 0, 0, 0);
     }
 
     void OnDrawGizmos()
     {
-        Gizmos.color = Color;
-        Gizmos.DrawCube(transform.position, new Vector3(0.95f, 0.01f, 0.95f));
+        Color withAlpha = new Color(this.Color.r, this.Color.g, this.Color.b, 0.55f);
+        Gizmos.color = withAlpha;
+        Gizmos.DrawCube(transform.position, new Vector3(0.8f, 0.01f, 0.8f));
     }
 
     public override bool Equals(object obj)

@@ -13,7 +13,7 @@ public static class Utilities
     }
 
     // Mouse position translated to world position as cell coordinates.
-    public static bool MousePos(out Vector2Int mousePosition)
+    public static bool MousePositionOnMap(out Vector2Int mousePosition)
     {
         mousePosition = new Vector2Int(-1, -1);
         if (!Camera.main)

@@ -1,10 +1,16 @@
 commit:
-    highlight button to show what is the current action
-    differentiate visual range between move and action
 
 todo:
     when no more movement points, automatically set current ability to action
+    stop searching for walkable if hole
+    use same classes for level editor and real game (if doing in 3d)
+    level editor and level editor UI
+
+notes:
+    hearts can be stuck forever in corner if no puller/swapper
 
 ideas:
-    once one agent was moved, selection is locked on this agent, player must play action or pass turn
     be able to choose how agents are layed out at the start of the game on set of predetermined cells (should be invisible to other player)
+    play two units in one turn
+    units that just killed another unit gets a bonus? ex: +1 movement point
+    map editor....?

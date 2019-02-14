@@ -6,11 +6,10 @@ using Random = UnityEngine.Random;
 
 public class MapManager : MonoBehaviour
 {
+    public MapLayout mapLayout;
     public GameObject colliderPrefab;
+    public GameObject cellPrefab;
 
-    private int width;
-    private int height;
-    private MapLayout mapLayout;
     private Cell[] cells;
 
     public static MapManager Instance { get; private set; }
@@ -22,19 +21,13 @@ public class MapManager : MonoBehaviour
             Instance = this;
         else if (Instance != this)
             Destroy(this);
-    }
-
-    public void Initialize(MapLayout mapLayout)
-    {
-        width = mapLayout.width;
-        height = mapLayout.height;
         SetupColliderPlane();
         InstantiateCells();
     }
 
     void Update()
     {
-        DrawMap();
+        // DrawMap();
         UpdateVisualPath();
     }
 
@@ -42,9 +35,9 @@ public class MapManager : MonoBehaviour
     {
         GameObject collider = Instantiate(
             colliderPrefab,
-            new Vector3(width / 2f, 0f, height / 2f),
+            new Vector3(mapLayout.width / 2f, 0f, mapLayout.height / 2f),
             Quaternion.identity);
-        collider.transform.localScale = new Vector3(width / 10f, 1f, height / 10f);
+        collider.transform.localScale = new Vector3(mapLayout.width / 10f, 1f, mapLayout.height / 10f);
         collider.transform.parent = transform;
     }
 
@@ -89,7 +82,7 @@ public class MapManager : MonoBehaviour
 
     public bool IsPositionOnMap(Vector2Int pos)
     {
-        return (pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height);
+        return (pos.x >= 0 && pos.x < mapLayout.width && pos.y >= 0 && pos.y < mapLayout.height);
     }
 
     public bool AreNeighbours(Cell c1, Cell c2)
@@ -123,7 +116,7 @@ public class MapManager : MonoBehaviour
         if (!IsPositionOnMap(pos))
             return null;
 
-        return cells[pos.x + pos.y * width];
+        return cells[pos.x + pos.y * mapLayout.width];
     }
 
     public Cell CellAt(int x, int y)
@@ -180,12 +173,12 @@ public class MapManager : MonoBehaviour
 
     private void InstantiateCells()
     {
-        cells = new Cell[width * height];
-        for (int y = 0; y < height; ++y)
-            for (int x = 0; x < width; ++x)
+        cells = new Cell[mapLayout.width * mapLayout.height];
+        for (int y = 0; y < mapLayout.height; ++y)
+            for (int x = 0; x < mapLayout.width; ++x)
             {
-                GameObject go = new GameObject(string.Format("[{0}, {1}]", x, y));
-                Cell cell = go.AddComponent<Cell>();
+                GameObject go = Instantiate(cellPrefab, new Vector3(x, 0f, y), Quaternion.identity);
+                Cell cell = go.GetComponent<Cell>();
                 cell.Initialize(new Vector2Int(x, y));
                 if (Array.Exists(
                     GameManager.Instance.mapLayout.winningPositions,
@@ -193,21 +186,21 @@ public class MapManager : MonoBehaviour
                 {
                     cell.CurrentState = Cell.State.Hole;
                 }
-                cells[x + y * width] = cell;
+                cells[x + y * mapLayout.width] = cell;
             }
     }
 
     private void DrawMap()
     {
-        Vector3 widthLine = Vector3.right * width;
-        Vector3 heightLine = Vector3.forward * height;
+        Vector3 widthLine = Vector3.right * mapLayout.width;
+        Vector3 heightLine = Vector3.forward * mapLayout.height;
 
-        for (int z = 0; z <= width; ++z)
+        for (int z = 0; z <= mapLayout.width; ++z)
         {
             Vector3 start = Vector3.forward * z;
             Debug.DrawLine(start, start + widthLine);
 
-            for (int x = 0; x <= width; ++x)
+            for (int x = 0; x <= mapLayout.width; ++x)
             {
                 start = Vector3.right * x;
                 Debug.DrawLine(start, start + heightLine);
@@ -246,13 +239,13 @@ public class MapManager : MonoBehaviour
         {
             if (cells[i].CurrentState == Cell.State.Empty)
             {
-                cells[i].Color = Color.yellow;
+                cells[i].Color = Color.gray;
             }
             else if (cells[i].CurrentState == Cell.State.Hole)
             {
                 cells[i].Color = Color.black;
             }
-            else
+            else if (cells[i].CurrentState == Cell.State.Agent)
             {
                 cells[i].Color = new Color(1, 0.7f, 0);
             }
