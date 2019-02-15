@@ -1,10 +1,10 @@
 commit:
 
 todo:
+    level editor and level editor UI
+    use same classes for level editor and real game (if doing in 3d)
     when no more movement points, automatically set current ability to action
     stop searching for walkable if hole
-    use same classes for level editor and real game (if doing in 3d)
-    level editor and level editor UI
 
 notes:
     hearts can be stuck forever in corner if no puller/swapper

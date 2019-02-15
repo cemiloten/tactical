@@ -229,7 +229,6 @@ MonoBehaviour:
   red: {fileID: 2100000, guid: d644c013738374e93a6cc02132da7880, type: 2}
   blue: {fileID: 2100000, guid: 01780c0c48f4f49839adbf379ddcc6a3, type: 2}
   playerCount: 2
-  mapLayout: {fileID: 11400000, guid: 8dc225957a9f84ba385a4264cd276fa5, type: 2}
   agentsWithTypes:
   - type: 0
     prefab: {fileID: 1160936408645608421, guid: 709f8ef2a9c9985448351734efa68d41,
@@ -921,7 +920,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c889b8a4663665e408a494e39a792a4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapLayout: {fileID: 11400000, guid: 8dc225957a9f84ba385a4264cd276fa5, type: 2}
+  level: {fileID: 11400000, guid: 8dc225957a9f84ba385a4264cd276fa5, type: 2}
   colliderPrefab: {fileID: 3340921959608702414, guid: e0e251672306d42459a7529334065c35,
     type: 3}
   cellPrefab: {fileID: 1606679475906566052, guid: 594784a45ec755f4190e8af3687fea20,

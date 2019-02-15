@@ -37,12 +37,14 @@ public class Agent : MonoBehaviour
 
     void OnEnable()
     {
-        GameManager.Instance.OnEndTurn += OnEndTurn;
+        if (GameManager.Instance != null)
+            GameManager.Instance.OnEndTurn += OnEndTurn;
     }
 
     void OnDisable()
     {
-        GameManager.Instance.OnEndTurn -= OnEndTurn;
+        if (GameManager.Instance != null)
+            GameManager.Instance.OnEndTurn -= OnEndTurn;
     }
 
     void Start()
@@ -66,7 +68,7 @@ public class Agent : MonoBehaviour
             ability.Reset();
         }
 
-        Vector2Int[] positions = GameManager.Instance.mapLayout.winningPositions;
+        Vector2Int[] positions = MapManager.Instance.level.holes;
         for (int i = 0; i < positions.Length; ++i)
         {
             if (positions[i] == Position)

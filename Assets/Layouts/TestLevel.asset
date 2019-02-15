@@ -51,6 +51,6 @@ MonoBehaviour:
   - type: 2
     team: 1
     position: {x: 3, y: 4}
-  winningPositions:
+  holes:
   - {x: 0, y: 3}
   - {x: 6, y: 3}

@@ -32,13 +32,13 @@ public class Push : Ability
 
         if (source.CurrentState != Cell.State.Agent)
         {
-            Debug.LogError("[source] cell of Push must contain an Agent");
+            Debug.LogWarning("[source] cell of Push must contain an Agent");
             return false;
         }
 
         if (target.CurrentState != Cell.State.Agent)
         {
-            Debug.LogError("[target] cell of Push state must contain an Agent");
+            Debug.LogWarning("[target] cell of Push state must contain an Agent");
             return false;
         }
 

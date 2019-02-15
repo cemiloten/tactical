@@ -15,7 +15,6 @@ public class GameManager : MonoBehaviour
     public Material red;
     public Material blue;
     public int playerCount = 2;
-    public MapLayout mapLayout;
 
     [Serializable]
     public struct AgentWithType
@@ -49,31 +48,41 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void OnEnable()
+    {
+        Agent.OnAgentDead += OnAgentDead;
+    }
+
+    private void OnDisable()
+    {
+        Agent.OnAgentDead -= OnAgentDead;
+    }
+
     void Awake()
     {
         if (Instance == null)
             Instance = this;
         else if (Instance != this)
             Destroy(this);
+    }
 
+    void Start()
+    {
         moveButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Move); });
         actionButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Action); });
         endTurnButton.onClick.AddListener(ButtonToEndTurn);
         nextAgentButton.onClick.AddListener(SelectNextAgent);
 
-        deadAgents = new Agent[mapLayout.agents.Length];
-        InstantiateAgentsFromLayout();
-    }
-
-    void OnEnable()
-    {
-        Agent.OnAgentDead += OnAgentDead;
-    }
-
-    void Start()
-    {
-        MapManager.Instance.PlaceAgentsFromLayout(mapLayout, agents);
+        SetupGame();
         SelectNextAgent();
+    }
+
+    void SetupGame()
+    {
+        InstantiateAgentsFromLayout();
+        MapManager.Instance.SetupColliderPlane();
+        MapManager.Instance.InstantiateCells();
+        MapManager.Instance.PlaceAgents(agents);
     }
 
     void Update()
@@ -140,6 +149,8 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+
+        MapManager.Instance.UpdateVisualPath();
     }
 
     void OnAgentDead(Agent agent)
@@ -250,13 +261,15 @@ public class GameManager : MonoBehaviour
 
     private void InstantiateAgentsFromLayout()
     {
-        agents = new Agent[mapLayout.agents.Length];
+        Level level = MapManager.Instance.level;
+        deadAgents = new Agent[level.agents.Length];
+        agents = new Agent[level.agents.Length];
         for (int i = 0; i < agents.Length; ++i)
         {
-            GameObject prefab = TypeToPrefab(mapLayout.agents[i].type);
+            GameObject prefab = TypeToPrefab(level.agents[i].type);
             if (prefab == null)
             {
-                Debug.LogErrorFormat("Didn't find prefab of type {0}", mapLayout.agents[i].type);
+                Debug.LogErrorFormat("Didn't find prefab of type {0}", level.agents[i].type);
                 return;
             }
 

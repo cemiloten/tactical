@@ -2,15 +2,19 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 public class MapManager : MonoBehaviour
 {
-    public MapLayout mapLayout;
-    public GameObject colliderPrefab;
+    public Level level;
     public GameObject cellPrefab;
+    public GameObject colliderPrefab;
 
+    public int width;
+    public int height;
     private Cell[] cells;
+    private new GameObject collider;
 
     public static MapManager Instance { get; private set; }
     public List<Cell> VisualPath { get; set; }
@@ -21,24 +25,63 @@ public class MapManager : MonoBehaviour
             Instance = this;
         else if (Instance != this)
             Destroy(this);
-        SetupColliderPlane();
-        InstantiateCells();
     }
 
-    void Update()
+    public void SetupColliderPlane()
     {
-        // DrawMap();
-        UpdateVisualPath();
-    }
-
-    private void SetupColliderPlane()
-    {
-        GameObject collider = Instantiate(
+        collider = Instantiate(
             colliderPrefab,
-            new Vector3(mapLayout.width / 2f, 0f, mapLayout.height / 2f),
+            new Vector3(width / 2f, 0f, height / 2f),
             Quaternion.identity);
-        collider.transform.localScale = new Vector3(mapLayout.width / 10f, 1f, mapLayout.height / 10f);
+        collider.transform.localScale = new Vector3(width / 10f, 1f, height / 10f);
         collider.transform.parent = transform;
+    }
+
+    public void InstantiateCells()
+    {
+        cells = new Cell[width * height];
+        for (int y = 0; y < height; ++y)
+            for (int x = 0; x < width; ++x)
+            {
+                GameObject go = Instantiate(cellPrefab, new Vector3(x, 0f, y), Quaternion.identity);
+                Cell cell = go.GetComponent<Cell>();
+                cell.Initialize(new Vector2Int(x, y));
+                if (Array.Exists(level.holes, vec2 => vec2 == new Vector2Int(x, y)))
+                {
+                    cell.CurrentState = Cell.State.Hole;
+                }
+                cells[x + y * width] = cell;
+            }
+    }
+
+    public void Cleanup()
+    {
+        if (cells != null)
+        {
+            for (int i = 0; i < cells.Length; ++i)
+                Destroy(cells[i].gameObject);
+            cells = null;
+        }
+        if (collider != null)
+        {
+            Destroy(collider);
+            collider = null;
+        }
+    }
+
+    public void PlaceAgents(Agent[] agents)
+    {
+        if (level == null)
+        {
+            Debug.LogError("[layout] is null");
+            return;
+        }
+
+        for (int a = 0; a < level.agents.Length; ++a)
+        {
+            // todo: check array bounds
+            PlaceAgent(agents[a], CellAt(level.agents[a].position));
+        }
     }
 
     private void PlaceAgent(Agent agent, Cell cell)
@@ -48,22 +91,7 @@ public class MapManager : MonoBehaviour
         agent.transform.position = Utilities.ToWorldPosition(cell.Position, agent.transform);
     }
 
-    public void PlaceAgentsFromLayout(MapLayout mapLayout, Agent[] agents)
-    {
-        if (mapLayout == null)
-        {
-            Debug.LogError("[layout] is null");
-            return;
-        }
-
-        for (int a = 0; a < mapLayout.agents.Length; ++a)
-        {
-            // todo: check array bounds
-            PlaceAgent(agents[a], CellAt(mapLayout.agents[a].position));
-        }
-    }
-
-    public void PlaceAgents(Agent[] agents)
+    public void PlaceAgentsRandom(Agent[] agents)
     {
         for (int i = 0; i < agents.Length; ++i)
         {
@@ -82,7 +110,7 @@ public class MapManager : MonoBehaviour
 
     public bool IsPositionOnMap(Vector2Int pos)
     {
-        return (pos.x >= 0 && pos.x < mapLayout.width && pos.y >= 0 && pos.y < mapLayout.height);
+        return (pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height);
     }
 
     public bool AreNeighbours(Cell c1, Cell c2)
@@ -116,7 +144,7 @@ public class MapManager : MonoBehaviour
         if (!IsPositionOnMap(pos))
             return null;
 
-        return cells[pos.x + pos.y * mapLayout.width];
+        return cells[pos.x + pos.y * width];
     }
 
     public Cell CellAt(int x, int y)
@@ -171,36 +199,17 @@ public class MapManager : MonoBehaviour
         return cellsInRange;
     }
 
-    private void InstantiateCells()
-    {
-        cells = new Cell[mapLayout.width * mapLayout.height];
-        for (int y = 0; y < mapLayout.height; ++y)
-            for (int x = 0; x < mapLayout.width; ++x)
-            {
-                GameObject go = Instantiate(cellPrefab, new Vector3(x, 0f, y), Quaternion.identity);
-                Cell cell = go.GetComponent<Cell>();
-                cell.Initialize(new Vector2Int(x, y));
-                if (Array.Exists(
-                    GameManager.Instance.mapLayout.winningPositions,
-                    element => element == new Vector2Int(x, y)))
-                {
-                    cell.CurrentState = Cell.State.Hole;
-                }
-                cells[x + y * mapLayout.width] = cell;
-            }
-    }
-
     private void DrawMap()
     {
-        Vector3 widthLine = Vector3.right * mapLayout.width;
-        Vector3 heightLine = Vector3.forward * mapLayout.height;
+        Vector3 widthLine = Vector3.right * width;
+        Vector3 heightLine = Vector3.forward * height;
 
-        for (int z = 0; z <= mapLayout.width; ++z)
+        for (int z = 0; z <= width; ++z)
         {
             Vector3 start = Vector3.forward * z;
             Debug.DrawLine(start, start + widthLine);
 
-            for (int x = 0; x <= mapLayout.width; ++x)
+            for (int x = 0; x <= width; ++x)
             {
                 start = Vector3.right * x;
                 Debug.DrawLine(start, start + heightLine);
@@ -208,7 +217,7 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    private void UpdateVisualPath()
+    public void UpdateVisualPath()
     {
         if (GameManager.Instance.HasBusyAgent)
             return;
@@ -231,15 +240,14 @@ public class MapManager : MonoBehaviour
         }
         else
         {
-            VisualPath = selection.CurrentAbility.Range(
-                MapManager.Instance.CellAt(selection.Position));
+            VisualPath = selection.CurrentAbility.Range(MapManager.Instance.CellAt(selection.Position));
         }
 
         for (int i = 0; i < cells.Length; ++i)
         {
             if (cells[i].CurrentState == Cell.State.Empty)
             {
-                cells[i].Color = Color.gray;
+                cells[i].Color = new Color(1, 1, 1, 0);
             }
             else if (cells[i].CurrentState == Cell.State.Hole)
             {

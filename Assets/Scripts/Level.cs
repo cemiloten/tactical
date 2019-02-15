@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName="Map Layout", menuName="Tactical/Map Layout")]
-public class MapLayout : ScriptableObject
+[CreateAssetMenu(fileName="Level", menuName="Tactical/Level")]
+public class Level : ScriptableObject
 {
     [System.Serializable]
     public struct AgentWithPosition
@@ -22,5 +22,5 @@ public class MapLayout : ScriptableObject
 
     public AgentWithPosition[] agents;
 
-    public Vector2Int[] winningPositions;
+    public Vector2Int[] holes;
 }
