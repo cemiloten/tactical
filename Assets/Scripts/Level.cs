@@ -2,13 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName="Level", menuName="Tactical/Level")]
+[CreateAssetMenu(fileName = "Level", menuName = "Tactical/Level")]
 public class Level : ScriptableObject
 {
     [System.Serializable]
     public struct AgentWithPosition
     {
-        public Agent.Type type;
+        public AgentType type;
 
         [Range(0, 1)]
         public int team;

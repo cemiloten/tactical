@@ -17,7 +17,7 @@ public class Move : Ability
 
     private void Awake()
     {
-        Type = Ability.CastType.Move;
+        Type = AbilityType.Move;
         Reset();
     }
 
@@ -68,15 +68,15 @@ public class Move : Ability
             return false;
         }
 
-        if (source.CurrentState != Cell.State.Agent)
+        if (source.State != CellState.Agent)
         {
-            Debug.LogErrorFormat("[source], {0}: state must be Agent, is {1} instead", source.Position, source.CurrentState);
+            Debug.LogErrorFormat("[source], {0}: state must be Agent, is {1} instead", source.Position, source.State);
             return false;
         }
 
         if (!target.Walkable)
         {
-            Debug.LogErrorFormat("Cannot move to cell with state '{0}'", target.CurrentState);
+            Debug.LogErrorFormat("Cannot move to cell with state '{0}'", target.State);
             return false;
         }
 
@@ -121,7 +121,7 @@ public class Move : Ability
     private void StartMoving(Cell source)
     {
         Casting = true;
-        source.CurrentState = Cell.State.Empty;
+        source.State = CellState.Empty;
         agent = GameManager.Instance.AgentAt(source);
         if (agent == null)
         {
@@ -175,7 +175,7 @@ public class Move : Ability
             FinishedMoving();
         }
 
-        if (agent != null && MapManager.Instance.CellAt(agent.Position).CurrentState == Cell.State.Hole)
+        if (agent != null && MapManager.Instance.CellAt(agent.Position).State == CellState.Hole)
         {
             FinishedMoving();
             if (agent == GameManager.Instance.Selection)
@@ -194,7 +194,7 @@ public class Move : Ability
         pathIndex = 0;
         movementTimer = 0f;
         agent.Position = Utilities.ToMapPosition(transform.position);
-        MapManager.Instance.CellAt(agent.Position).CurrentState = Cell.State.Agent;
+        MapManager.Instance.CellAt(agent.Position).State = CellState.Agent;
 
         if (castedFromOther)
         {

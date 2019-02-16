@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,8 +24,10 @@ public class LevelMaker : MonoBehaviour
     public GameObject swapperPrefab;
     public Text widthText;
     public Text heightText;
+    public Text teamText;
     public Slider widthSlider;
     public Slider heightSlider;
+    public Slider teamSlider;
     public Button emptyButton;
     public Button holeButton;
     public Button heartButton;
@@ -32,10 +35,11 @@ public class LevelMaker : MonoBehaviour
     public Button pullerButton;
     public Button swapperButton;
 
-    private int width = 7;
-    private int height = 7;
-    private List<Agent> agents = new List<Agent>();
+    private int width;
+    private int height;
+    private Agent[] agents = new Agent[Globals.maxAgentCount];
     private SelectionType currentType = SelectionType.Empty;
+    private int currentTeam = 0;
 
 
     private void Start()
@@ -47,7 +51,11 @@ public class LevelMaker : MonoBehaviour
         pullerButton.onClick.AddListener  (delegate { SetCurrentType(SelectionType.Puller  ); });
         swapperButton.onClick.AddListener (delegate { SetCurrentType(SelectionType.Swapper ); });
 
-        Camera.main.transform.eulerAngles = new Vector3(45f, 0f, 0f);
+        SetWidthFromSlider();
+        SetHeightFromSlider();
+        SetCurrentTeam();
+
+        Camera.main.transform.eulerAngles = new Vector3(90f, 0f, 0f);
         GenerateGrid();
     }
 
@@ -72,6 +80,10 @@ public class LevelMaker : MonoBehaviour
             Debug.Log(mousePos);
             SetCellContent(mousePos);
         }
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            Debug.Log("debug");
+        }
     }
 
     private void SetCellContent(Vector2Int position)
@@ -92,7 +104,7 @@ public class LevelMaker : MonoBehaviour
         UpdateCell(cell, CurrentTypeToState());
     }
 
-    private Cell.State CurrentTypeToState()
+    private CellState CurrentTypeToState()
     {
         switch (currentType)
         {
@@ -100,36 +112,38 @@ public class LevelMaker : MonoBehaviour
             case SelectionType.Pusher:
             case SelectionType.Puller:
             case SelectionType.Swapper:
-                return Cell.State.Agent;
+                return CellState.Agent;
             case SelectionType.Hole:
-                return Cell.State.Hole;
+                return CellState.Hole;
             case SelectionType.Empty:
-                return Cell.State.Empty;
+                return CellState.Empty;
             default:
                 Debug.LogErrorFormat(
                     "Didn't find appropriate State for type '{0}', returning Empty",
                     currentType);
-                return Cell.State.Empty;
+                return CellState.Empty;
         }
     }
 
-    private void UpdateCell(Cell cell, Cell.State newState)
+    private void UpdateCell(Cell cell, CellState newState)
     {
-        cell.CurrentState = newState;
-        // todo: fix this (handle list correctly)
+        cell.State = newState;
 
         Agent agent = AgentAt(cell.Position);
-        bool wasNull = true;
         if (agent != null)
         {
             Destroy(agent.gameObject);
-            wasNull = false;
+            int index = Array.IndexOf(agents, agent);
+            if (index < 0)
+            {
+                Debug.LogErrorFormat("Didn't find agent '{0}' in array", agent);
+                return;
+            }
+            agents[index] = null;
         }
 
-        if (newState != Cell.State.Agent)
-        // No need to keep entry in list
+        if (newState == CellState.Empty || newState == CellState.Hole)
         {
-            agents.Remove(agent);
             return;
         }
 
@@ -146,17 +160,34 @@ public class LevelMaker : MonoBehaviour
             Quaternion.identity);
         agent = go.GetComponent<Agent>();
         agent.Position = cell.Position;
-        if (wasNull)
-            agents.Add(agent);
+        AddAgentToArray(agent);
+    }
+
+    private void AddAgentToArray(Agent agent)
+    {
+        for (int i = 0; i < agents.Length / 2; ++i)
+        {
+            int index = i + currentTeam * agents.Length / 2;
+            if (agents[index] == null)
+            {
+                agents[index] = agent;
+                return;
+            }
+        }
+        Debug.LogError("Couldn't add agent to array, no free slot left");
     }
 
     private Agent AgentAt(Vector2Int position)
     {
-        Debug.LogFormat("AgentAt: arg position: {0}", position);
-        for (int i = 0; i < agents.Count; ++i)
+        if (!MapManager.Instance.IsPositionOnMap(position))
         {
-            Debug.LogFormat("agent[{0}] position: {1}", agents[i], i);
-            if (agents[i].Position == position)
+            Debug.LogErrorFormat("[position]: {0} is not valid", position);
+            return null;
+        }
+
+        for (int i = 0; i < agents.Length; ++i)
+        {
+            if (agents[i] != null && agents[i].Position == position)
                 return agents[i];
         }
         return null;
@@ -176,8 +207,15 @@ public class LevelMaker : MonoBehaviour
 
     private void PlaceCamera()
     {
-        float max = Mathf.Max(width, height);
-        Camera.main.transform.position = new Vector3(width / 2f, max, -max / 2f);
+        Camera.main.transform.position = new Vector3(width / 2f,
+        Mathf.Max(width, height),
+        height / 2f);
+    }
+
+    public void SetCurrentTeam()
+    {
+        currentTeam = (int)teamSlider.value;
+        teamText.text = currentTeam.ToString();
     }
 
     public void SetWidthFromSlider()

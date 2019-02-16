@@ -8,7 +8,7 @@ public class Push : Ability
 
     private void Awake()
     {
-        Type = Ability.CastType.Action;
+        Type = AbilityType.Action;
     }
 
     public override List<Cell> Range(Cell source)
@@ -30,13 +30,13 @@ public class Push : Ability
             return false;
         }
 
-        if (source.CurrentState != Cell.State.Agent)
+        if (source.State != CellState.Agent)
         {
             Debug.LogWarning("[source] cell of Push must contain an Agent");
             return false;
         }
 
-        if (target.CurrentState != Cell.State.Agent)
+        if (target.State != CellState.Agent)
         {
             Debug.LogWarning("[target] cell of Push state must contain an Agent");
             return false;
@@ -64,8 +64,8 @@ public class Push : Ability
 
         Agent targetAgent = GameManager.Instance.AgentAt(target);
         Ability ability = targetAgent.CurrentAbility;
-        if (ability != null && ability.Type != Ability.CastType.Move)
-            targetAgent.SetCurrentAbility(Ability.CastType.Move);
+        if (ability != null && ability.Type != AbilityType.Move)
+            targetAgent.SetCurrentAbility(AbilityType.Move);
 
         Move move = targetAgent.CurrentAbility as Move;
         move.MoveFromOther(path);

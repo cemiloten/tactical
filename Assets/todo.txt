@@ -1,8 +1,8 @@
 commit:
 
 todo:
-    level editor and level editor UI
-    use same classes for level editor and real game (if doing in 3d)
+    level editor: write scriptableobject to disk
+    level editor: select agent's team
     when no more movement points, automatically set current ability to action
     stop searching for walkable if hole
 

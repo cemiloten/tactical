@@ -77,7 +77,7 @@ public static class PathMaker
                 if (!cell.Walkable)
                 {
                     // Accept agent, but path ends there.
-                    if (cell.CurrentState == Cell.State.Agent)
+                    if (cell.State == CellState.Agent)
                         result.Add(cell);
                     break;
                 }

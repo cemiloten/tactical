@@ -3,22 +3,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum AgentType
+{
+    Pusher,
+    Puller,
+    Swapper,
+    Heart
+}
+
 public class Agent : MonoBehaviour
 {
-    public enum Type
-    {
-        Pusher,
-        Puller,
-        Swapper,
-        Heart
-    }
 
-    public Type type;
+    public AgentType type;
 
     public delegate void OnAgentDeadHandler(Agent agent);
     public static event OnAgentDeadHandler OnAgentDead;
 
-    private Dictionary<Ability.CastType, Ability> abilities;
+    private Dictionary<AbilityType, Ability> abilities;
 
     public Vector2Int Position { get; set; }
     public Ability CurrentAbility { get; private set; }
@@ -54,7 +55,7 @@ public class Agent : MonoBehaviour
             return;
 
         Ability ability = null;
-        abilities.TryGetValue(Ability.CastType.Move, out ability);
+        abilities.TryGetValue(AbilityType.Move, out ability);
         CurrentAbility = ability;
     }
 
@@ -86,7 +87,7 @@ public class Agent : MonoBehaviour
         OnAgentDead(this);
     }
 
-    private Dictionary<Ability.CastType, Ability> GetAbilities()
+    private Dictionary<AbilityType, Ability> GetAbilities()
     {
         Ability[] components = GetComponents<Ability>();
         if (components.Length < 1)
@@ -94,14 +95,14 @@ public class Agent : MonoBehaviour
             Debug.LogWarningFormat("No component of type [Ability] was found on {0}", this);
             return null;
         }
-        var abilities = new Dictionary<Ability.CastType, Ability>();
+        var abilities = new Dictionary<AbilityType, Ability>();
         for (int i = 0; i < components.Length; ++i)
             if (!abilities.ContainsKey(components[i].Type))
                 abilities[components[i].Type] = components[i];
         return abilities;
     }
 
-    public void SetCurrentAbility(Ability.CastType type)
+    public void SetCurrentAbility(AbilityType type)
     {
         if (abilities == null)
         {
@@ -111,9 +112,9 @@ public class Agent : MonoBehaviour
         CurrentAbility = GetFromType(type);
     }
 
-    private Ability GetFromType(Ability.CastType type)
+    private Ability GetFromType(AbilityType type)
     {
-        if (type == Ability.CastType.None)
+        if (type == AbilityType.None)
             return null;
         Ability ability = null;
         abilities.TryGetValue(type, out ability);
@@ -124,10 +125,10 @@ public class Agent : MonoBehaviour
     {
         Cell cell = MapManager.Instance.CellAt(Position);
         if (cell != null)
-            cell.CurrentState = Cell.State.Empty;
+            cell.State = CellState.Empty;
 
         Position = pos;
         transform.position = Utilities.ToWorldPosition(pos, transform);
-        MapManager.Instance.CellAt(Position).CurrentState = Cell.State.Agent;
+        MapManager.Instance.CellAt(Position).State = CellState.Agent;
     }
 }

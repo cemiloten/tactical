@@ -8,7 +8,7 @@ public class Swap : Ability
 
     private void Awake()
     {
-        Type = Ability.CastType.Action;
+        Type = AbilityType.Action;
     }
 
     public override List<Cell> Range(Cell source)
@@ -36,15 +36,15 @@ public class Swap : Ability
             return false;
         }
 
-        if (source.CurrentState != Cell.State.Agent)
+        if (source.State != CellState.Agent)
         {
-            Debug.LogErrorFormat("[source] at {0}: state must be Agent, is {1} instead", source.Position, source.CurrentState);
+            Debug.LogErrorFormat("[source] at {0}: state must be Agent, is {1} instead", source.Position, source.State);
             return false;
         }
 
-        if (target.CurrentState != Cell.State.Agent)
+        if (target.State != CellState.Agent)
         {
-            Debug.LogErrorFormat("[target] at {0}: state must be Agent, is {1} instead", target.Position, target.CurrentState);
+            Debug.LogErrorFormat("[target] at {0}: state must be Agent, is {1} instead", target.Position, target.State);
             return false;
         }
 

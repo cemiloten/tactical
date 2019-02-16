@@ -19,7 +19,7 @@ public class GameManager : MonoBehaviour
     [Serializable]
     public struct AgentWithType
     {
-        public Agent.Type type;
+        public AgentType type;
         public GameObject prefab;
     }
     public AgentWithType[] agentsWithTypes;
@@ -68,8 +68,8 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        moveButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Move); });
-        actionButton.onClick.AddListener(delegate { SetCurrentAbility(Ability.CastType.Action); });
+        moveButton.onClick.AddListener(delegate { SetCurrentAbility(AbilityType.Move); });
+        actionButton.onClick.AddListener(delegate { SetCurrentAbility(AbilityType.Action); });
         endTurnButton.onClick.AddListener(ButtonToEndTurn);
         nextAgentButton.onClick.AddListener(SelectNextAgent);
 
@@ -97,12 +97,12 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            if (Selection.CurrentAbility.Type == Ability.CastType.Move)
+            if (Selection.CurrentAbility.Type == AbilityType.Move)
             {
                 moveButton.GetComponent<Image>().color = Color.green;
                 actionButton.GetComponent<Image>().color = Color.white;
             }
-            else if (Selection.CurrentAbility.Type == Ability.CastType.Action)
+            else if (Selection.CurrentAbility.Type == AbilityType.Action)
             {
                 moveButton.GetComponent<Image>().color = Color.white;
                 actionButton.GetComponent<Image>().color = Color.magenta;
@@ -118,16 +118,16 @@ public class GameManager : MonoBehaviour
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
-            SetCurrentAbility(Ability.CastType.Move);
+            SetCurrentAbility(AbilityType.Move);
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
-            SetCurrentAbility(Ability.CastType.Action);
+            SetCurrentAbility(AbilityType.Action);
 
         if (Input.GetMouseButtonDown(0)
             && MapManager.Instance.IsPositionOnMap(mousePos)
             && Selection != null
             && Selection.CurrentAbility != null
-            && Selection.CurrentAbility.Type != Ability.CastType.None)
+            && Selection.CurrentAbility.Type != AbilityType.None)
         {
             if (MapManager.Instance.VisualPath == null)
                 Debug.LogFormat("Visual path is null, cannot cast {0}", Selection.CurrentAbility.Type);
@@ -138,11 +138,11 @@ public class GameManager : MonoBehaviour
                     MapManager.Instance.CellAt(mousePos));
                 if (cast)
                 {
-                    if (Selection.CurrentAbility.Type == Ability.CastType.Move)
+                    if (Selection.CurrentAbility.Type == AbilityType.Move)
                     {
                         selectionLocked = true;
                     }
-                    else if (Selection.CurrentAbility.Type == Ability.CastType.Action)
+                    else if (Selection.CurrentAbility.Type == AbilityType.Action)
                     {
                         StartCoroutine(EndTurn());
                     }
@@ -156,7 +156,7 @@ public class GameManager : MonoBehaviour
     void OnAgentDead(Agent agent)
     {
         Debug.LogFormat("Receiving agent dead callback from {0}", agent);
-        MapManager.Instance.CellAt(agent.Position).CurrentState = Cell.State.Hole;
+        MapManager.Instance.CellAt(agent.Position).State = CellState.Hole;
         agent.gameObject.SetActive(false);
         int index = 0;
         for (int i = 0; i < agents.Length; ++i)
@@ -171,13 +171,13 @@ public class GameManager : MonoBehaviour
         deadAgents[index] = agent;
     }
 
-    public void SetCurrentAbility(Ability.CastType type)
+    public void SetCurrentAbility(AbilityType type)
     {
         if (Selection != null
             && Selection.CurrentAbility != null
             && Selection.CurrentAbility.Type == type)
         {
-            type = Ability.CastType.None;
+            type = AbilityType.None;
         }
         Selection.SetCurrentAbility(type);
     }
@@ -195,7 +195,7 @@ public class GameManager : MonoBehaviour
         int nextPlayerIndex = currentPlayer * (agents.Length / 2);
         nextAgentIndex = (nextAgentIndex + 1) % (agents.Length / 2);
         while (agents[nextPlayerIndex + nextAgentIndex] == null
-            || agents[nextPlayerIndex + nextAgentIndex].type == Agent.Type.Heart)
+            || agents[nextPlayerIndex + nextAgentIndex].type == AgentType.Heart)
         {
             nextAgentIndex = (nextAgentIndex + 1) % (agents.Length / 2);
         }
@@ -217,7 +217,7 @@ public class GameManager : MonoBehaviour
         selectionLocked = false;
         currentPlayer = (currentPlayer + 1) % playerCount;
         SelectNextAgent();
-        Selection.SetCurrentAbility(Ability.CastType.Move);
+        Selection.SetCurrentAbility(AbilityType.Move);
 
         OnEndTurn?.Invoke();
     }
@@ -246,7 +246,7 @@ public class GameManager : MonoBehaviour
         return null;
     }
 
-    private GameObject TypeToPrefab(Agent.Type type)
+    private GameObject TypeToPrefab(AgentType type)
     {
         for (int i = 0; i < agentsWithTypes.Length; ++i)
         {

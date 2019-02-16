@@ -2,10 +2,10 @@
 {
     Properties
     {
-        _MainColor ("Main Color", Color) = (0.2, 0.2, 0.3, 1)
         _HighlightColor ("Highlight Color", Color) = (1, 1, 1, 1)
 
-        [HideInInspector]_Highlighted("Highlighted", Float) = 0
+        [HideInInspector]_Color ("Color", Color) = (0, 0, 0, 1)
+        [HideInInspector]_Highlighted ("Highlighted", Float) = 0
     }
     SubShader
     {
@@ -32,11 +32,11 @@
                 float4 vertex : SV_POSITION;
             };
 
-            float4 _MainColor;
             float4 _HighlightColor;
 
             UNITY_INSTANCING_BUFFER_START(Props)
                 UNITY_DEFINE_INSTANCED_PROP(float, _Highlighted)
+                UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
             UNITY_INSTANCING_BUFFER_END(Props)
 
             v2f vert (appdata v)
@@ -49,7 +49,8 @@
 
             fixed4 frag (v2f i) : SV_Target
             {
-                return lerp(_HighlightColor, _MainColor, _Highlighted);
+                float4 col = UNITY_ACCESS_INSTANCED_PROP(Props, _Color);
+                return lerp(col, _HighlightColor, _Highlighted);
             }
             ENDCG
         }

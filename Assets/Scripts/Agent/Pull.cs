@@ -8,7 +8,7 @@ public class Pull : Ability
 
     private void Awake()
     {
-        Type = Ability.CastType.Action;
+        Type = AbilityType.Action;
     }
 
     public override List<Cell> Range(Cell source)
@@ -30,15 +30,15 @@ public class Pull : Ability
             return false;
         }
 
-        if (source.CurrentState != Cell.State.Agent)
+        if (source.State != CellState.Agent)
         {
-            Debug.LogWarningFormat("Cannot cast Pull with {0} as [source], must be Agent", source.CurrentState);
+            Debug.LogWarningFormat("Cannot cast Pull with {0} as [source], must be Agent", source.State);
             return false;
         }
 
-        if (target.CurrentState != Cell.State.Agent)
+        if (target.State != CellState.Agent)
         {
-            Debug.LogWarningFormat("Cannot cast Pull with {0} as [target], must be Agent", target.CurrentState);
+            Debug.LogWarningFormat("Cannot cast Pull with {0} as [target], must be Agent", target.State);
             return false;
         }
 
@@ -58,8 +58,8 @@ public class Pull : Ability
 
         Agent targetAgent = GameManager.Instance.AgentAt(target);
         Ability ability = targetAgent.CurrentAbility;
-        if (ability != null && ability.Type != Ability.CastType.Move)
-            targetAgent.SetCurrentAbility(Ability.CastType.Move);
+        if (ability != null && ability.Type != AbilityType.Move)
+            targetAgent.SetCurrentAbility(AbilityType.Move);
 
         Move move = targetAgent.CurrentAbility as Move;
         move.MoveFromOther(path);

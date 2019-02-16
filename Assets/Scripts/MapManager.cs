@@ -48,7 +48,7 @@ public class MapManager : MonoBehaviour
                 cell.Initialize(new Vector2Int(x, y));
                 if (Array.Exists(level.holes, vec2 => vec2 == new Vector2Int(x, y)))
                 {
-                    cell.CurrentState = Cell.State.Hole;
+                    cell.State = CellState.Hole;
                 }
                 cells[x + y * width] = cell;
             }
@@ -86,7 +86,19 @@ public class MapManager : MonoBehaviour
 
     private void PlaceAgent(Agent agent, Cell cell)
     {
-        cell.CurrentState = Cell.State.Agent;
+        if (agent == null)
+        {
+            Debug.LogError("[agent] is null");
+            return;
+        }
+
+        if (cell == null)
+        {
+            Debug.LogError("[cell] is null");
+            return;
+        }
+
+        cell.State = CellState.Agent;
         agent.Position = cell.Position;
         agent.transform.position = Utilities.ToWorldPosition(cell.Position, agent.transform);
     }
@@ -102,7 +114,7 @@ public class MapManager : MonoBehaviour
             {
                 index = Random.Range(0, cells.Length);
                 cell = cells[index];
-            } while (!cell.Walkable || cell.CurrentState == Cell.State.Hole);
+            } while (!cell.Walkable || cell.State == CellState.Hole);
 
             PlaceAgent(agents[i], cell);
         }
@@ -233,7 +245,7 @@ public class MapManager : MonoBehaviour
             return;
 
         if (selection.CurrentAbility == null
-            || selection.CurrentAbility.Type == Ability.CastType.None
+            || selection.CurrentAbility.Type == AbilityType.None
             || selection.Busy)
         {
             VisualPath = null;
@@ -245,15 +257,15 @@ public class MapManager : MonoBehaviour
 
         for (int i = 0; i < cells.Length; ++i)
         {
-            if (cells[i].CurrentState == Cell.State.Empty)
+            if (cells[i].State == CellState.Empty)
             {
                 cells[i].Color = new Color(1, 1, 1, 0);
             }
-            else if (cells[i].CurrentState == Cell.State.Hole)
+            else if (cells[i].State == CellState.Hole)
             {
                 cells[i].Color = Color.black;
             }
-            else if (cells[i].CurrentState == Cell.State.Agent)
+            else if (cells[i].State == CellState.Agent)
             {
                 cells[i].Color = new Color(1, 0.7f, 0);
             }
@@ -263,8 +275,8 @@ public class MapManager : MonoBehaviour
         {
             for (int j = 0; j < VisualPath.Count; ++j)
             {
-                Color rangeColor = selection.CurrentAbility.Type == Ability.CastType.Move ? Color.green : Color.magenta;
-                if (VisualPath[j] != null && VisualPath[j].CurrentState != Cell.State.Hole)
+                Color rangeColor = selection.CurrentAbility.Type == AbilityType.Move ? Color.green : Color.magenta;
+                if (VisualPath[j] != null && VisualPath[j].State != CellState.Hole)
                     VisualPath[j].Color = rangeColor;
             }
         }

@@ -2,19 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum AbilityType
+{
+    None,
+    Move,
+    Action
+}
+
 public abstract class Ability : MonoBehaviour
 {
-    public enum CastType
-    {
-        None,
-        Move,
-        Action
-    }
-
     public int range = 0;
 
     public bool Casting { get; set; }
-    public CastType Type { get; protected set; }
+    public AbilityType Type { get; protected set; }
 
     // Execute ability's effect
     public abstract bool Cast(Cell source, Cell target);
