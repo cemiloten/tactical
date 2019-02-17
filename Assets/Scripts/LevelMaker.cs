@@ -6,16 +6,6 @@ using UnityEngine.UI;
 
 public class LevelMaker : MonoBehaviour
 {
-    public enum SelectionType
-    {
-        Empty,
-        Hole,
-        Pusher,
-        Puller,
-        Swapper,
-        Heart
-    }
-
     public GameObject colliderPrefab;
     public GameObject cellPrefab;
     public GameObject heartPrefab;
@@ -38,18 +28,20 @@ public class LevelMaker : MonoBehaviour
     private int width;
     private int height;
     private Agent[] agents = new Agent[Globals.maxAgentCount];
-    private SelectionType currentType = SelectionType.Empty;
+    private List<Vector2Int> holes = new List<Vector2Int>();
+    private CellState currentSelection = CellState.Empty;
+    private AgentType currentAgentType = AgentType.None;
     private int currentTeam = 0;
 
 
     private void Start()
     {
-        emptyButton.onClick.AddListener   (delegate { SetCurrentType(SelectionType.Empty   ); });
-        holeButton.onClick.AddListener    (delegate { SetCurrentType(SelectionType.Hole    ); });
-        heartButton.onClick.AddListener   (delegate { SetCurrentType(SelectionType.Heart   ); });
-        pusherButton.onClick.AddListener  (delegate { SetCurrentType(SelectionType.Pusher  ); });
-        pullerButton.onClick.AddListener  (delegate { SetCurrentType(SelectionType.Puller  ); });
-        swapperButton.onClick.AddListener (delegate { SetCurrentType(SelectionType.Swapper ); });
+        emptyButton.onClick.AddListener   (delegate { SetCurrentType(CellState.Empty, AgentType.None    ); });
+        holeButton.onClick.AddListener    (delegate { SetCurrentType(CellState.Hole,  AgentType.None    ); });
+        heartButton.onClick.AddListener   (delegate { SetCurrentType(CellState.Agent, AgentType.Heart   ); });
+        pusherButton.onClick.AddListener  (delegate { SetCurrentType(CellState.Agent, AgentType.Pusher  ); });
+        pullerButton.onClick.AddListener  (delegate { SetCurrentType(CellState.Agent, AgentType.Puller  ); });
+        swapperButton.onClick.AddListener (delegate { SetCurrentType(CellState.Agent, AgentType.Swapper ); });
 
         SetWidthFromSlider();
         SetHeightFromSlider();
@@ -65,8 +57,17 @@ public class LevelMaker : MonoBehaviour
         MapManager.Instance.height = height;
         MapManager.Instance.Cleanup();
         MapManager.Instance.SetupColliderPlane();
-        MapManager.Instance.InstantiateCells();
+        MapManager.Instance.InstantiateEmptyCells();
         PlaceCamera();
+    }
+
+    public void WriteToDisk()
+    {
+        Level level = new Level();
+        level.width = width;
+        level.height = height;
+        level.cells = MapManager.Instance.Cells;
+        level.agents = agents;
     }
 
     private void Update()
@@ -77,12 +78,7 @@ public class LevelMaker : MonoBehaviour
         if (Input.GetMouseButtonDown(0)
             && MapManager.Instance.IsPositionOnMap(mousePos))
         {
-            Debug.Log(mousePos);
             SetCellContent(mousePos);
-        }
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            Debug.Log("debug");
         }
     }
 
@@ -97,37 +93,20 @@ public class LevelMaker : MonoBehaviour
         Cell cell = MapManager.Instance.CellAt(position);
         if (cell == null)
         {
-            Debug.LogError("[cell] is null");
+            Debug.LogError("Cannot update null cell");
             return;
         }
 
-        UpdateCell(cell, CurrentTypeToState());
-    }
-
-    private CellState CurrentTypeToState()
-    {
-        switch (currentType)
-        {
-            case SelectionType.Heart:
-            case SelectionType.Pusher:
-            case SelectionType.Puller:
-            case SelectionType.Swapper:
-                return CellState.Agent;
-            case SelectionType.Hole:
-                return CellState.Hole;
-            case SelectionType.Empty:
-                return CellState.Empty;
-            default:
-                Debug.LogErrorFormat(
-                    "Didn't find appropriate State for type '{0}', returning Empty",
-                    currentType);
-                return CellState.Empty;
-        }
+        UpdateCell(cell, SelectionTypeToState());
     }
 
     private void UpdateCell(Cell cell, CellState newState)
     {
-        cell.State = newState;
+        // cell.State = newState;
+        if (cell.State == CellState.Hole && newState != CellState.Hole)
+        {
+            // remove hole from list
+        }
 
         Agent agent = AgentAt(cell.Position);
         if (agent != null)
@@ -147,10 +126,10 @@ public class LevelMaker : MonoBehaviour
             return;
         }
 
-        GameObject prefab = SelectionTypeToPrefab(currentType);
+        GameObject prefab = SelectionTypeToPrefab(currentSelection);
         if (prefab == null)
         {
-            Debug.LogErrorFormat("Error finding prefab from type {0}", currentType);
+            Debug.LogErrorFormat("Error finding prefab from type {0}", currentSelection);
             return;
         }
 
@@ -181,35 +160,29 @@ public class LevelMaker : MonoBehaviour
     {
         if (!MapManager.Instance.IsPositionOnMap(position))
         {
-            Debug.LogErrorFormat("[position]: {0} is not valid", position);
             return null;
         }
-
-        for (int i = 0; i < agents.Length; ++i)
-        {
-            if (agents[i] != null && agents[i].Position == position)
-                return agents[i];
-        }
-        return null;
+        return Array.Find(agents, a => a.Position == position);
     }
 
-    private GameObject SelectionTypeToPrefab(SelectionType type)
+    private GameObject AgentTypeToPrefab(AgentType type)
     {
         switch (type)
         {
-            case SelectionType.Heart: return heartPrefab;
-            case SelectionType.Pusher: return pusherPrefab;
-            case SelectionType.Puller: return pullerPrefab;
-            case SelectionType.Swapper: return swapperPrefab;
+            case AgentType.Heart: return heartPrefab;
+            case AgentType.Pusher: return pusherPrefab;
+            case AgentType.Puller: return pullerPrefab;
+            case AgentType.Swapper: return swapperPrefab;
             default: return null;
         }
     }
 
     private void PlaceCamera()
     {
-        Camera.main.transform.position = new Vector3(width / 2f,
-        Mathf.Max(width, height),
-        height / 2f);
+        Camera.main.transform.position = new Vector3(
+            width / 2f,
+            Mathf.Max(width, height),
+            height / 2f);
     }
 
     public void SetCurrentTeam()
@@ -230,27 +203,9 @@ public class LevelMaker : MonoBehaviour
         heightText.text = string.Format("Height: {0}", height);
     }
 
-    public void SetCurrentType(SelectionType type)
+    public void SetCurrentType(CellState state, AgentType type)
     {
-        Debug.LogFormat("called, {0}", type);
-        currentType = type;
-    }
-
-    private void DrawMap()
-    {
-        Vector3 widthLine = Vector3.right * width;
-        Vector3 heightLine = Vector3.forward * height;
-
-        for (int z = 0; z <= width; ++z)
-        {
-            Vector3 start = Vector3.forward * z;
-            Debug.DrawLine(start, start + widthLine);
-
-            for (int x = 0; x <= width; ++x)
-            {
-                start = Vector3.right * x;
-                Debug.DrawLine(start, start + heightLine);
-            }
-        }
+        currentSelection = state;
+        currentAgentType = type;
     }
 }

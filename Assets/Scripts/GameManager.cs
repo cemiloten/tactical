@@ -14,15 +14,8 @@ public class GameManager : MonoBehaviour
     public Button endTurnButton;
     public Material red;
     public Material blue;
+    public Level level;
     public int playerCount = 2;
-
-    [Serializable]
-    public struct AgentWithType
-    {
-        public AgentType type;
-        public GameObject prefab;
-    }
-    public AgentWithType[] agentsWithTypes;
 
     public delegate void OnEndTurnHandler();
     public event OnEndTurnHandler OnEndTurn;
@@ -39,8 +32,6 @@ public class GameManager : MonoBehaviour
     {
         get
         {
-            if (agents == null)
-                throw new NullReferenceException();
             for (int a = 0; a < agents.Length; ++a)
                 if (agents[a] != null && agents[a].Busy)
                     return true;
@@ -81,7 +72,7 @@ public class GameManager : MonoBehaviour
     {
         InstantiateAgentsFromLayout();
         MapManager.Instance.SetupColliderPlane();
-        MapManager.Instance.InstantiateCells();
+        MapManager.Instance.InstantiateCells(level.cells);
         MapManager.Instance.PlaceAgents(agents);
     }
 
@@ -155,19 +146,10 @@ public class GameManager : MonoBehaviour
 
     void OnAgentDead(Agent agent)
     {
-        Debug.LogFormat("Receiving agent dead callback from {0}", agent);
         MapManager.Instance.CellAt(agent.Position).State = CellState.Hole;
         agent.gameObject.SetActive(false);
-        int index = 0;
-        for (int i = 0; i < agents.Length; ++i)
-        {
-            if (agents[i] != null && agents[i] == agent)
-            {
-                index = i;
-                agents[i] = null;
-                break;
-            }
-        }
+        int index = Array.IndexOf(agents, agent);
+        agents[index] = null;
         deadAgents[index] = agent;
     }
 
@@ -216,10 +198,24 @@ public class GameManager : MonoBehaviour
         MapManager.Instance.VisualPath = null;
         selectionLocked = false;
         currentPlayer = (currentPlayer + 1) % playerCount;
+
         SelectNextAgent();
         Selection.SetCurrentAbility(AbilityType.Move);
 
+        LookForDeadAgents();
         OnEndTurn?.Invoke();
+    }
+
+    private void LookForDeadAgents()
+    {
+        for (int i = 0; i < agents.Length; ++i)
+        {
+            if (agents[i] != null
+                && MapManager.Instance.CellAt(agents[i].Position).State == CellState.Hole)
+            {
+                agents[i].Die();
+            }
+        }
     }
 
     public Agent AgentAt(Cell cell)
@@ -248,22 +244,21 @@ public class GameManager : MonoBehaviour
 
     private GameObject TypeToPrefab(AgentType type)
     {
-        for (int i = 0; i < agentsWithTypes.Length; ++i)
-        {
-            if (agentsWithTypes[i].type == type)
-            {
-                return agentsWithTypes[i].prefab;
-            }
-        }
-        Debug.LogErrorFormat("Didn't find prefab of type {0}", type);
-        return null;
+        // for (int i = 0; i < agentsWithTypes.Length; ++i)
+        // {
+        //     if (agentsWithTypes[i].type == type)
+        //     {
+        //         return agentsWithTypes[i].prefab;
+        //     }
+        // }
+        // Debug.LogErrorFormat("Didn't find prefab of type {0}", type);
+        // return null;
     }
 
     private void InstantiateAgentsFromLayout()
     {
-        Level level = MapManager.Instance.level;
-        deadAgents = new Agent[level.agents.Length];
-        agents = new Agent[level.agents.Length];
+        deadAgents = new Agent[level.agents.Count];
+        agents = new Agent[level.agents.Count];
         for (int i = 0; i < agents.Length; ++i)
         {
             GameObject prefab = TypeToPrefab(level.agents[i].type);

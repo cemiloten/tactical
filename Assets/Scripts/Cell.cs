@@ -47,11 +47,11 @@ public class Cell : MonoBehaviour
         Color = state.ToCellColor();
     }
 
-    public void Initialize(Vector2Int pos)
+    public void Initialize(Vector2Int pos, CellState newState = CellState.Empty)
     {
         Position = pos;
-        state = CellState.Empty;
-        color = state.ToCellColor();
+        state = newState;
+        color = newState.ToCellColor();
         transform.position = Utilities.ToWorldPosition(pos, transform);
     }
 

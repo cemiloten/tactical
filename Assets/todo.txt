@@ -1,8 +1,8 @@
 commit:
 
 todo:
-    level editor: write scriptableobject to disk
-    level editor: select agent's team
+    fix GameManager, MapManager, LevelMaker communication......
+
     when no more movement points, automatically set current ability to action
     stop searching for walkable if hole
 
@@ -10,7 +10,6 @@ notes:
     hearts can be stuck forever in corner if no puller/swapper
 
 ideas:
-    be able to choose how agents are layed out at the start of the game on set of predetermined cells (should be invisible to other player)
     play two units in one turn
     units that just killed another unit gets a bonus? ex: +1 movement point
     map editor....?

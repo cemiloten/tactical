@@ -7,7 +7,6 @@ using Random = UnityEngine.Random;
 
 public class MapManager : MonoBehaviour
 {
-    public Level level;
     public GameObject cellPrefab;
     public GameObject colliderPrefab;
 
@@ -16,8 +15,9 @@ public class MapManager : MonoBehaviour
     private Cell[] cells;
     private new GameObject collider;
 
-    public static MapManager Instance { get; private set; }
+    public Cell[] Cells { get => cells; }
     public List<Cell> VisualPath { get; set; }
+    public static MapManager Instance { get; private set; }
 
     void Awake()
     {
@@ -37,7 +37,18 @@ public class MapManager : MonoBehaviour
         collider.transform.parent = transform;
     }
 
-    public void InstantiateCells()
+    public void InstantiateCells(Cell[] newCells)
+    {
+        cells = new Cell[newCells.Length];
+        for (int i = 0; i < newCells.Length; ++i)
+        {
+            GameObject go = Instantiate(cellPrefab);
+            Cell cell = go.GetComponent<Cell>();
+            cell.Initialize(newCells[i].Position, newCells[i].State);
+        }
+    }
+
+    public void InstantiateEmptyCells()
     {
         cells = new Cell[width * height];
         for (int y = 0; y < height; ++y)
@@ -46,10 +57,6 @@ public class MapManager : MonoBehaviour
                 GameObject go = Instantiate(cellPrefab, new Vector3(x, 0f, y), Quaternion.identity);
                 Cell cell = go.GetComponent<Cell>();
                 cell.Initialize(new Vector2Int(x, y));
-                if (Array.Exists(level.holes, vec2 => vec2 == new Vector2Int(x, y)))
-                {
-                    cell.State = CellState.Hole;
-                }
                 cells[x + y * width] = cell;
             }
     }
@@ -71,16 +78,10 @@ public class MapManager : MonoBehaviour
 
     public void PlaceAgents(Agent[] agents)
     {
-        if (level == null)
-        {
-            Debug.LogError("[layout] is null");
-            return;
-        }
-
-        for (int a = 0; a < level.agents.Length; ++a)
+        for (int a = 0; a < agents.Length; ++a)
         {
             // todo: check array bounds
-            PlaceAgent(agents[a], CellAt(level.agents[a].position));
+            PlaceAgent(agents[a], CellAt(agents[a].Position));
         }
     }
 

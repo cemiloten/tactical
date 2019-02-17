@@ -1,4 +1,4 @@
-public class Globals
+public static class Globals
 {
     public const int maxAgentCount = 32;
 }

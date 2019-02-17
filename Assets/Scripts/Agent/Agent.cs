@@ -5,6 +5,7 @@ using UnityEngine;
 
 public enum AgentType
 {
+    None,
     Pusher,
     Puller,
     Swapper,
@@ -15,6 +16,7 @@ public class Agent : MonoBehaviour
 {
 
     public AgentType type;
+    public int team;
 
     public delegate void OnAgentDeadHandler(Agent agent);
     public static event OnAgentDeadHandler OnAgentDead;
@@ -53,7 +55,6 @@ public class Agent : MonoBehaviour
         abilities = GetAbilities();
         if (abilities == null)
             return;
-
         Ability ability = null;
         abilities.TryGetValue(AbilityType.Move, out ability);
         CurrentAbility = ability;
@@ -67,13 +68,6 @@ public class Agent : MonoBehaviour
         foreach (Ability ability in abilities.Values)
         {
             ability.Reset();
-        }
-
-        Vector2Int[] positions = MapManager.Instance.level.holes;
-        for (int i = 0; i < positions.Length; ++i)
-        {
-            if (positions[i] == Position)
-                Die();
         }
     }
 
