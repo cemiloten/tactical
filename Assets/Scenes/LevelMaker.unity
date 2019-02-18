@@ -1617,7 +1617,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c889b8a4663665e408a494e39a792a4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  level: {fileID: 11400000, guid: a0e4cd2b35205e0419f376e8d4af4a6b, type: 2}
   cellPrefab: {fileID: 219835627623271236, guid: 980c14fa87467c448aeb6da403fc122f,
     type: 3}
   colliderPrefab: {fileID: 3340921959608702414, guid: e0e251672306d42459a7529334065c35,
@@ -1751,7 +1750,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 27.1, y: 0}
+  m_AnchoredPosition: {x: 27.099976, y: 0}
   m_SizeDelta: {x: 61.5, y: 362.4}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &1151353333

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,21 +28,21 @@ public class LevelMaker : MonoBehaviour
 
     private int width;
     private int height;
-    private Agent[] agents = new Agent[Globals.maxAgentCount];
+    private List<Agent> agents = new List<Agent>();
     private List<Vector2Int> holes = new List<Vector2Int>();
-    private CellState currentSelection = CellState.Empty;
+    private CellState currentState = CellState.Empty;
     private AgentType currentAgentType = AgentType.None;
     private int currentTeam = 0;
 
 
     private void Start()
     {
-        emptyButton.onClick.AddListener   (delegate { SetCurrentType(CellState.Empty, AgentType.None    ); });
-        holeButton.onClick.AddListener    (delegate { SetCurrentType(CellState.Hole,  AgentType.None    ); });
-        heartButton.onClick.AddListener   (delegate { SetCurrentType(CellState.Agent, AgentType.Heart   ); });
-        pusherButton.onClick.AddListener  (delegate { SetCurrentType(CellState.Agent, AgentType.Pusher  ); });
-        pullerButton.onClick.AddListener  (delegate { SetCurrentType(CellState.Agent, AgentType.Puller  ); });
-        swapperButton.onClick.AddListener (delegate { SetCurrentType(CellState.Agent, AgentType.Swapper ); });
+        emptyButton.onClick.AddListener(delegate { SetCurrentType(CellState.Empty, AgentType.None); });
+        holeButton.onClick.AddListener(delegate { SetCurrentType(CellState.Hole, AgentType.None); });
+        heartButton.onClick.AddListener(delegate { SetCurrentType(CellState.Agent, AgentType.Heart); });
+        pusherButton.onClick.AddListener(delegate { SetCurrentType(CellState.Agent, AgentType.Pusher); });
+        pullerButton.onClick.AddListener(delegate { SetCurrentType(CellState.Agent, AgentType.Puller); });
+        swapperButton.onClick.AddListener(delegate { SetCurrentType(CellState.Agent, AgentType.Swapper); });
 
         SetWidthFromSlider();
         SetHeightFromSlider();
@@ -63,11 +64,13 @@ public class LevelMaker : MonoBehaviour
 
     public void WriteToDisk()
     {
-        Level level = new Level();
+        Level level = ScriptableObject.CreateInstance(typeof(Level)) as Level;
         level.width = width;
         level.height = height;
         level.cells = MapManager.Instance.Cells;
         level.agents = agents;
+        level.holes = holes;
+        AssetDatabase.CreateAsset(level, "Assets/Levels/Level.asset");
     }
 
     private void Update()
@@ -80,16 +83,13 @@ public class LevelMaker : MonoBehaviour
         {
             SetCellContent(mousePos);
         }
+
+        if(Input.GetKeyDown(KeyCode.Space))
+            WriteToDisk();
     }
 
     private void SetCellContent(Vector2Int position)
     {
-        if (!MapManager.Instance.IsPositionOnMap(position))
-        {
-            Debug.LogErrorFormat("[position]: {0} is not valid", position);
-            return;
-        }
-
         Cell cell = MapManager.Instance.CellAt(position);
         if (cell == null)
         {
@@ -97,115 +97,141 @@ public class LevelMaker : MonoBehaviour
             return;
         }
 
-        UpdateCell(cell, SelectionTypeToState());
+        UpdateCell(cell);
     }
 
-    private void UpdateCell(Cell cell, CellState newState)
+    private void UpdateCell(Cell cell)
     {
-        // cell.State = newState;
-        if (cell.State == CellState.Hole && newState != CellState.Hole)
-        {
-            // remove hole from list
-        }
+        if (currentState == CellState.Obstacle)
+            throw new NotImplementedException();
 
-        Agent agent = AgentAt(cell.Position);
-        if (agent != null)
+        if (cell.State == CellState.Empty)
         {
+            if (currentState == CellState.Empty)
+                return;
+            if (currentState == CellState.Hole)
+            {
+                holes.Add(cell.Position);
+            }
+            else if (currentState == CellState.Agent)
+            {
+                AddAgent(cell);
+            }
+        }
+        else if (cell.State == CellState.Hole)
+        {
+            if (currentState == CellState.Hole)
+                return;
+
+            holes.RemoveAll(vec2 => vec2 == cell.Position);
+            if (currentState == CellState.Agent)
+            {
+                AddAgent(cell);
+            }
+        }
+        else if (cell.State == CellState.Agent)
+        {
+            Agent agent = AgentAt(cell.Position);
+            if (agent == null)
+            {
+                Debug.LogErrorFormat("Didn't find agent at {0}", cell.Position);
+                return;
+            }
+
+            if (currentState == CellState.Agent && currentAgentType == agent.type)
+            {
+                return;
+            }
+
             Destroy(agent.gameObject);
-            int index = Array.IndexOf(agents, agent);
-            if (index < 0)
+            agents.Remove(agent);
+            if (currentState == CellState.Agent)
             {
-                Debug.LogErrorFormat("Didn't find agent '{0}' in array", agent);
-                return;
-            }
-            agents[index] = null;
-        }
-
-        if (newState == CellState.Empty || newState == CellState.Hole)
-        {
-            return;
-        }
-
-        GameObject prefab = SelectionTypeToPrefab(currentSelection);
-        if (prefab == null)
-        {
-            Debug.LogErrorFormat("Error finding prefab from type {0}", currentSelection);
-            return;
-        }
-
-        GameObject go = Instantiate(
-            prefab,
-            Utilities.ToWorldPosition(cell.Position, prefab.transform),
-            Quaternion.identity);
-        agent = go.GetComponent<Agent>();
-        agent.Position = cell.Position;
-        AddAgentToArray(agent);
-    }
-
-    private void AddAgentToArray(Agent agent)
-    {
-        for (int i = 0; i < agents.Length / 2; ++i)
-        {
-            int index = i + currentTeam * agents.Length / 2;
-            if (agents[index] == null)
-            {
-                agents[index] = agent;
-                return;
+                AddAgent(cell);
             }
         }
-        Debug.LogError("Couldn't add agent to array, no free slot left");
+
+        cell.State = currentState;
     }
 
-    private Agent AgentAt(Vector2Int position)
+private void AddAgent(Cell cell)
+{
+    GameObject prefab = CurrentAgentTypeToPrefab();
+    if (prefab == null)
     {
-        if (!MapManager.Instance.IsPositionOnMap(position))
-        {
-            return null;
-        }
-        return Array.Find(agents, a => a.Position == position);
+        Debug.LogErrorFormat("Error finding prefab from type {0}", currentState);
+        return;
     }
+    GameObject go = Instantiate(
+        prefab,
+        Utilities.ToWorldPosition(cell.Position, prefab.transform),
+        Quaternion.identity);
+    Agent agent = go.GetComponent<Agent>();
+    agent.team = currentTeam;
+    agent.type = currentAgentType;
+    agent.Position = cell.Position;
+    agents.Add(agent);
+}
 
-    private GameObject AgentTypeToPrefab(AgentType type)
-    {
-        switch (type)
-        {
-            case AgentType.Heart: return heartPrefab;
-            case AgentType.Pusher: return pusherPrefab;
-            case AgentType.Puller: return pullerPrefab;
-            case AgentType.Swapper: return swapperPrefab;
-            default: return null;
-        }
-    }
 
-    private void PlaceCamera()
+private GameObject CurrentAgentTypeToPrefab()
+{
+    switch (currentAgentType)
     {
-        Camera.main.transform.position = new Vector3(
-            width / 2f,
-            Mathf.Max(width, height),
-            height / 2f);
+        case AgentType.Heart   : return heartPrefab;
+        case AgentType.Pusher  : return pusherPrefab;
+        case AgentType.Puller  : return pullerPrefab;
+        case AgentType.Swapper : return swapperPrefab;
+        default: return null;
     }
+}
 
-    public void SetCurrentTeam()
-    {
-        currentTeam = (int)teamSlider.value;
-        teamText.text = currentTeam.ToString();
-    }
+private Agent AgentAt(Vector2Int position)
+{
+    return agents.Find(a => a.Position == position);
+}
 
-    public void SetWidthFromSlider()
+private GameObject AgentTypeToPrefab(AgentType type)
+{
+    switch (type)
     {
-        width = (int)widthSlider.value;
-        widthText.text = string.Format("Width: {0}", width);
+        case AgentType.Heart: return heartPrefab;
+        case AgentType.Pusher: return pusherPrefab;
+        case AgentType.Puller: return pullerPrefab;
+        case AgentType.Swapper: return swapperPrefab;
+        default: return null;
     }
+}
 
-    public void SetHeightFromSlider()
-    {
-        height = (int)heightSlider.value;
-        heightText.text = string.Format("Height: {0}", height);
-    }
+private void PlaceCamera()
+{
+    Camera.main.transform.position = new Vector3(
+        width / 2f,
+        Mathf.Max(width, height),
+        height / 2f);
+}
 
-    public void SetCurrentType(CellState state, AgentType type)
-    {
-        currentSelection = state;
-        currentAgentType = type;
-    }
+public void SetCurrentTeam()
+{
+    currentTeam = (int)teamSlider.value;
+    teamText.text = currentTeam.ToString();
+}
+
+public void SetWidthFromSlider()
+{
+    width = (int)widthSlider.value;
+    widthText.text = string.Format("Width: {0}", width);
+}
+
+public void SetHeightFromSlider()
+{
+    height = (int)heightSlider.value;
+    heightText.text = string.Format("Height: {0}", height);
+}
+
+public void SetCurrentType(CellState state, AgentType type)
+{
+    currentState = state;
+    currentAgentType = type;
+}
 }

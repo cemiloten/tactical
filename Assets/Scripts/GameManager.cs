@@ -244,7 +244,10 @@ public class GameManager : MonoBehaviour
 
     private GameObject TypeToPrefab(AgentType type)
     {
-        // for (int i = 0; i < agentsWithTypes.Length; ++i)
+        // todo:
+        return null;
+
+        // for (int i = 1; i < agentsWithTypes.Length; ++i)
         // {
         //     if (agentsWithTypes[i].type == type)
         //     {
