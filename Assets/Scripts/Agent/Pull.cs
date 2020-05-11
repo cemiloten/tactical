@@ -30,15 +30,15 @@ public class Pull : Ability
             return false;
         }
 
-        if (source.State != CellState.Agent)
+        if (source.Type != CellType.Agent)
         {
-            Debug.LogWarningFormat("Cannot cast Pull with {0} as [source], must be Agent", source.State);
+            Debug.LogWarningFormat("Cannot cast Pull with {0} as [source], must be Agent", source.Type);
             return false;
         }
 
-        if (target.State != CellState.Agent)
+        if (target.Type != CellType.Agent)
         {
-            Debug.LogWarningFormat("Cannot cast Pull with {0} as [target], must be Agent", target.State);
+            Debug.LogWarningFormat("Cannot cast Pull with {0} as [target], must be Agent", target.Type);
             return false;
         }
 
@@ -56,7 +56,7 @@ public class Pull : Ability
             return false;
         }
 
-        Agent targetAgent = GameManager.Instance.AgentAt(target);
+        Agent targetAgent = MapManager.Instance.AgentAt(target);
         Ability ability = targetAgent.CurrentAbility;
         if (ability != null && ability.Type != AbilityType.Move)
             targetAgent.SetCurrentAbility(AbilityType.Move);

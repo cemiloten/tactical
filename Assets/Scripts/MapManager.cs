@@ -1,3 +1,4 @@
+using System.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,84 +6,70 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
-public class MapManager : MonoBehaviour
+
+public class MapManager : MonoBehaviourSingleton<MapManager>
 {
-    public GameObject cellPrefab;
-    public GameObject colliderPrefab;
+    [SerializeField] public Cell cellPrefab;
+    [SerializeField] public int width;
+    [SerializeField] public int height;
 
-    public int width;
-    public int height;
-    private Cell[] cells;
-    private new GameObject collider;
+    private Cell[] _cells;
+    private List<Cell> _groundCells;
 
-    public Cell[] Cells { get => cells; }
     public List<Cell> VisualPath { get; set; }
-    public static MapManager Instance { get; private set; }
 
-    void Awake()
+    protected override void OnAwake()
     {
-        if (Instance == null)
-            Instance = this;
-        else if (Instance != this)
-            Destroy(this);
+        InstantiateCells();
+        _groundCells = _cells.ToList();
     }
 
-    public void SetupColliderPlane()
+    private Cell GetRandomCell()
     {
-        collider = Instantiate(
-            colliderPrefab,
-            new Vector3(width / 2f, 0f, height / 2f),
-            Quaternion.identity);
-        collider.transform.localScale = new Vector3(width / 10f, 1f, height / 10f);
-        collider.transform.parent = transform;
+        if (_groundCells.Count == 0)
+            return null;
+
+        return _groundCells[Random.Range(0, _groundCells.Count)];
     }
 
-    public void InstantiateCells(Cell[] newCells)
+    public void InstantiateCells()
     {
-        cells = new Cell[newCells.Length];
-        for (int i = 0; i < newCells.Length; ++i)
-        {
-            GameObject go = Instantiate(cellPrefab);
-            Cell cell = go.GetComponent<Cell>();
-            cell.Initialize(newCells[i].Position, newCells[i].State);
-        }
-    }
-
-    public void InstantiateEmptyCells()
-    {
-        cells = new Cell[width * height];
+        _cells = new Cell[width * height];
+        int index = 0;
         for (int y = 0; y < height; ++y)
             for (int x = 0; x < width; ++x)
             {
-                GameObject go = Instantiate(cellPrefab, new Vector3(x, 0f, y), Quaternion.identity);
-                Cell cell = go.GetComponent<Cell>();
+                Cell cell = Instantiate(cellPrefab);
                 cell.Initialize(new Vector2Int(x, y));
-                cells[x + y * width] = cell;
+                cell.transform.parent = transform;
+
+                _cells[index++] = cell;
             }
     }
 
     public void Cleanup()
     {
-        if (cells != null)
-        {
-            for (int i = 0; i < cells.Length; ++i)
-                Destroy(cells[i].gameObject);
-            cells = null;
-        }
-        if (collider != null)
-        {
-            Destroy(collider);
-            collider = null;
-        }
+        if (_cells == null)
+            return;
+
+        for (int i = 0; i < _cells.Length; ++i)
+            Destroy(_cells[i].gameObject);
+        _cells = null;
     }
 
-    public void PlaceAgents(Agent[] agents)
+    public (bool, Vector2Int) ReserveRandomCell(CellType cellType, Agent agent)
     {
-        for (int a = 0; a < agents.Length; ++a)
-        {
-            // todo: check array bounds
-            PlaceAgent(agents[a], CellAt(agents[a].Position));
-        }
+        if (agent == null)
+            return (false, Vector2Int.zero);
+
+        Cell c = GetRandomCell();
+        if (c == null)
+            return (false, Vector2Int.zero);
+
+        _groundCells.Remove(c);
+        c.Type = cellType;
+        c.Agent = agent;
+        return (true, c.Position);
     }
 
     private void PlaceAgent(Agent agent, Cell cell)
@@ -99,31 +86,15 @@ public class MapManager : MonoBehaviour
             return;
         }
 
-        cell.State = CellState.Agent;
+        cell.Type = CellType.Agent;
         agent.Position = cell.Position;
         agent.transform.position = Utilities.ToWorldPosition(cell.Position, agent.transform);
     }
 
-    public void PlaceAgentsRandom(Agent[] agents)
-    {
-        for (int i = 0; i < agents.Length; ++i)
-        {
-            int index;
-            Cell cell;
-            // note: Very bad in case of no walkable cells in map
-            do
-            {
-                index = Random.Range(0, cells.Length);
-                cell = cells[index];
-            } while (!cell.Walkable || cell.State == CellState.Hole);
-
-            PlaceAgent(agents[i], cell);
-        }
-    }
-
     public bool IsPositionOnMap(Vector2Int pos)
     {
-        return (pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height);
+        return pos.x >= 0 && pos.x < width
+            && pos.y >= 0 && pos.y < height;
     }
 
     public bool AreNeighbours(Cell c1, Cell c2)
@@ -140,6 +111,7 @@ public class MapManager : MonoBehaviour
             return false;
         }
 
+        // todo: that's horrible
         List<Cell> neighbours = GetNeighbours(c1);
         for (int i = 0; i < neighbours.Count; ++i)
         {
@@ -151,13 +123,13 @@ public class MapManager : MonoBehaviour
 
     public Cell CellAt(Vector2Int pos)
     {
-        if (cells == null)
+        if (_cells == null)
             return null;
 
         if (!IsPositionOnMap(pos))
             return null;
 
-        return cells[pos.x + pos.y * width];
+        return _cells[pos.x + pos.y * width];
     }
 
     public Cell CellAt(int x, int y)
@@ -212,6 +184,11 @@ public class MapManager : MonoBehaviour
         return cellsInRange;
     }
 
+    public Agent AgentAt(Cell cell)
+    {
+        return cell.Agent ?? null;
+    }
+
     private void DrawMap()
     {
         Vector3 widthLine = Vector3.right * width;
@@ -228,60 +205,5 @@ public class MapManager : MonoBehaviour
                 Debug.DrawLine(start, start + heightLine);
             }
         }
-    }
-
-    public void UpdateVisualPath()
-    {
-        if (GameManager.Instance.HasBusyAgent)
-            return;
-
-        if (cells == null)
-        {
-            Debug.LogError("[cells] is null");
-            return;
-        }
-
-        Agent selection = GameManager.Instance.Selection;
-        if (selection == null)
-            return;
-
-        if (selection.CurrentAbility == null
-            || selection.CurrentAbility.Type == AbilityType.None
-            || selection.Busy)
-        {
-            VisualPath = null;
-        }
-        else
-        {
-            VisualPath = selection.CurrentAbility.Range(MapManager.Instance.CellAt(selection.Position));
-        }
-
-        for (int i = 0; i < cells.Length; ++i)
-        {
-            if (cells[i].State == CellState.Empty)
-            {
-                cells[i].Color = new Color(1, 1, 1, 0);
-            }
-            else if (cells[i].State == CellState.Hole)
-            {
-                cells[i].Color = Color.black;
-            }
-            else if (cells[i].State == CellState.Agent)
-            {
-                cells[i].Color = new Color(1, 0.7f, 0);
-            }
-        }
-
-        if (VisualPath != null)
-        {
-            for (int j = 0; j < VisualPath.Count; ++j)
-            {
-                Color rangeColor = selection.CurrentAbility.Type == AbilityType.Move ? Color.green : Color.magenta;
-                if (VisualPath[j] != null && VisualPath[j].State != CellState.Hole)
-                    VisualPath[j].Color = rangeColor;
-            }
-        }
-
-        CellAt(selection.Position).Color = Color.white;
     }
 }

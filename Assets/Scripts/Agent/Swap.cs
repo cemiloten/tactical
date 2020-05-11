@@ -36,22 +36,22 @@ public class Swap : Ability
             return false;
         }
 
-        if (source.State != CellState.Agent)
+        if (source.Type != CellType.Agent)
         {
-            Debug.LogErrorFormat("[source] at {0}: state must be Agent, is {1} instead", source.Position, source.State);
+            Debug.LogErrorFormat("[source] at {0}: state must be Agent, is {1} instead", source.Position, source.Type);
             return false;
         }
 
-        if (target.State != CellState.Agent)
+        if (target.Type != CellType.Agent)
         {
-            Debug.LogErrorFormat("[target] at {0}: state must be Agent, is {1} instead", target.Position, target.State);
+            Debug.LogErrorFormat("[target] at {0}: state must be Agent, is {1} instead", target.Position, target.Type);
             return false;
         }
 
         Debug.LogFormat("Casting Swap() from {0} to {1}", source.Position, target.Position);
 
-        Agent sourceAgent = GameManager.Instance.AgentAt(source);
-        Agent targetAgent = GameManager.Instance.AgentAt(target);
+        Agent sourceAgent = MapManager.Instance.AgentAt(source);
+        Agent targetAgent = MapManager.Instance.AgentAt(target);
 
         Vector2Int temp = source.Position;
         sourceAgent.Position = targetAgent.Position;

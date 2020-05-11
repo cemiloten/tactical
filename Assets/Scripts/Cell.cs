@@ -1,82 +1,41 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Lean.Touch;
 using UnityEngine;
 
-public enum CellState
+public enum CellType
 {
-    Empty,
+    Ground,
     Agent,
     Obstacle,
-    Hole
 }
 
 public class Cell : MonoBehaviour
 {
-    private Color color;
-    private CellState state = CellState.Empty;
-    private MeshRenderer meshRenderer;
-    private MaterialPropertyBlock propertyBlock;
+    private LeanSelectable _leanSelectable;
 
     public Vector2Int Position { get; private set; }
-    public bool Walkable { get { return state == CellState.Empty || state == CellState.Hole; } }
+    public CellType Type { get; set; }
+    public Agent Agent { get; set; }
 
-    public CellState State
-    {
-        get => state;
-        set
-        {
-            state = value;
-            SetColorInShader(value.ToCellColor());
-        }
-    }
-
-    public Color Color
-    {
-        get => color;
-        set
-        {
-            color = value;
-            SetColorInShader(value);
-        }
-    }
+    public bool Walkable => Type == CellType.Ground;
 
     private void Awake()
     {
-        propertyBlock = new MaterialPropertyBlock();
-        meshRenderer = GetComponent<MeshRenderer>();
-        Color = state.ToCellColor();
+        _leanSelectable = GetComponent<LeanSelectable>();
+        _leanSelectable.OnSelect.AddListener(OnSelect);
     }
 
-    public void Initialize(Vector2Int pos, CellState newState = CellState.Empty)
+    private void OnSelect(LeanFinger finger)
+    {
+        GameEvents.CellSelected.Invoke(this);
+    }
+
+    public void Initialize(Vector2Int pos, CellType type = CellType.Ground)
     {
         Position = pos;
-        state = newState;
-        color = newState.ToCellColor();
+        Type = type;
         transform.position = Utilities.ToWorldPosition(pos, transform);
-    }
-
-    private void SetColorInShader(Color col)
-    {
-        propertyBlock.SetColor("_Color", col);
-        meshRenderer.SetPropertyBlock(propertyBlock);
-    }
-
-    void OnDrawGizmos()
-    {
-        Gizmos.color = Color.magenta;
-        Gizmos.DrawCube(transform.position, new Vector3(0.8f, 0.01f, 0.8f));
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (obj == null || GetType() != obj.GetType())
-            return false;
-        Cell other = (Cell)obj;
-        return Position == other.Position && state == other.state;
-    }
-
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
     }
 }

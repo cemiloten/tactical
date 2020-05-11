@@ -14,14 +14,9 @@ public enum AgentType
 
 public class Agent : MonoBehaviour
 {
-
     public AgentType type;
-    public int team;
 
-    public delegate void OnAgentDeadHandler(Agent agent);
-    public static event OnAgentDeadHandler OnAgentDead;
-
-    private Dictionary<AbilityType, Ability> abilities;
+    private Dictionary<AbilityType, Ability> _abilities;
 
     public Vector2Int Position { get; set; }
     public Ability CurrentAbility { get; private set; }
@@ -29,43 +24,36 @@ public class Agent : MonoBehaviour
     {
         get
         {
-            if (abilities == null || abilities.Count < 1)
+            if (_abilities == null || _abilities.Count < 1)
                 return false;
-            foreach (Ability ability in abilities.Values)
+            foreach (Ability ability in _abilities.Values)
                 if (ability.Casting)
                     return true;
             return false;
         }
     }
 
-    void OnEnable()
+    private void Awake()
     {
-        if (GameManager.Instance != null)
-            GameManager.Instance.OnEndTurn += OnEndTurn;
-    }
-
-    void OnDisable()
-    {
-        if (GameManager.Instance != null)
-            GameManager.Instance.OnEndTurn -= OnEndTurn;
+        GameEvents.TurnEnd.AddListener(OnTurnEnd);
     }
 
     void Start()
     {
-        abilities = GetAbilities();
-        if (abilities == null)
+        _abilities = GetAbilities();
+        if (_abilities == null)
             return;
         Ability ability = null;
-        abilities.TryGetValue(AbilityType.Move, out ability);
+        _abilities.TryGetValue(AbilityType.Move, out ability);
         CurrentAbility = ability;
     }
 
-    public void OnEndTurn()
+    public void OnTurnEnd()
     {
-        if (abilities == null)
+        if (_abilities == null)
             return;
 
-        foreach (Ability ability in abilities.Values)
+        foreach (Ability ability in _abilities.Values)
         {
             ability.Reset();
         }
@@ -73,12 +61,7 @@ public class Agent : MonoBehaviour
 
     public void Die()
     {
-        if (OnAgentDead == null)
-        {
-            Debug.LogError("[OnAgentDead] is null");
-            return;
-        }
-        OnAgentDead(this);
+        GameEvents.AgentDead.Invoke(this);
     }
 
     private Dictionary<AbilityType, Ability> GetAbilities()
@@ -98,7 +81,7 @@ public class Agent : MonoBehaviour
 
     public void SetCurrentAbility(AbilityType type)
     {
-        if (abilities == null)
+        if (_abilities == null)
         {
             Debug.LogError("Cannot update ability, [abilities] is null.");
             return;
@@ -111,18 +94,7 @@ public class Agent : MonoBehaviour
         if (type == AbilityType.None)
             return null;
         Ability ability = null;
-        abilities.TryGetValue(type, out ability);
+        _abilities.TryGetValue(type, out ability);
         return ability;
-    }
-
-    public void SnapTo(Vector2Int pos)
-    {
-        Cell cell = MapManager.Instance.CellAt(Position);
-        if (cell != null)
-            cell.State = CellState.Empty;
-
-        Position = pos;
-        transform.position = Utilities.ToWorldPosition(pos, transform);
-        MapManager.Instance.CellAt(Position).State = CellState.Agent;
     }
 }

@@ -30,13 +30,13 @@ public class Push : Ability
             return false;
         }
 
-        if (source.State != CellState.Agent)
+        if (source.Type != CellType.Agent)
         {
             Debug.LogWarning("[source] cell of Push must contain an Agent");
             return false;
         }
 
-        if (target.State != CellState.Agent)
+        if (target.Type != CellType.Agent)
         {
             Debug.LogWarning("[target] cell of Push state must contain an Agent");
             return false;
@@ -62,7 +62,7 @@ public class Push : Ability
             return false;
         }
 
-        Agent targetAgent = GameManager.Instance.AgentAt(target);
+        Agent targetAgent = MapManager.Instance.AgentAt(target);
         Ability ability = targetAgent.CurrentAbility;
         if (ability != null && ability.Type != AbilityType.Move)
             targetAgent.SetCurrentAbility(AbilityType.Move);

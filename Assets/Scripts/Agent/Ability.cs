@@ -13,10 +13,9 @@ public abstract class Ability : MonoBehaviour
 {
     public int range = 0;
 
-    public bool Casting { get; set; }
+    public bool Casting { get; protected set; }
     public AbilityType Type { get; protected set; }
 
-    // Execute ability's effect
     public abstract bool Cast(Cell source, Cell target);
 
     // Cells that can be targeted with this ability, from {source} Cell.
