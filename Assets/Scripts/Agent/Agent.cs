@@ -48,6 +48,15 @@ public class Agent : MonoBehaviour
         CurrentAbility = ability;
     }
 
+    public void Cast(AbilityType abilityType, Cell source, Cell target)
+    {
+        var a = GetAbility(abilityType);
+        if (a == null)
+            return;
+
+        a.Cast(source, target);
+    }
+
     public void OnTurnEnd()
     {
         if (_abilities == null)
@@ -79,17 +88,7 @@ public class Agent : MonoBehaviour
         return abilities;
     }
 
-    public void SetCurrentAbility(AbilityType type)
-    {
-        if (_abilities == null)
-        {
-            Debug.LogError("Cannot update ability, [abilities] is null.");
-            return;
-        }
-        CurrentAbility = GetFromType(type);
-    }
-
-    private Ability GetFromType(AbilityType type)
+    private Ability GetAbility(AbilityType type)
     {
         if (type == AbilityType.None)
             return null;

@@ -36,21 +36,23 @@ public class AgentManager : MonoBehaviourSingleton<AgentManager>
         GameEvents.CellSelected.AddListener(OnCellSelected);
     }
 
-    private void OnCellSelected(Cell cell)
-    {
-        // todo
-    }
-
     private void Start()
     {
-        foreach (var agent in _agents)
+        foreach (Agent agent in _agents)
         {
             // result: (hasCell, position)
-            var result = MapManager.Instance.ReserveRandomCell(CellType.Agent, agent);
+            (bool, Vector2Int) result = MapManager.Instance.ReserveRandomCell(CellType.Agent, agent);
             if (!result.Item1)
                 continue;
 
             agent.Position = result.Item2;
+            agent.transform.position= agent.Position.ToWorldPosition();
         }
+    }
+
+    private void OnCellSelected(Cell cell)
+    {
+        Agent agent = _agents[0];
+        agent.Cast(AbilityType.Move, MapManager.Instance.CellAt(agent.Position), cell);
     }
 }

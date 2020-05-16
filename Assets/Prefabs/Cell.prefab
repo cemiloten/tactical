@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6849714286543929484}
   - component: {fileID: 7017303733517326940}
   - component: {fileID: 6416270039058321762}
+  - component: {fileID: 5712735682460705198}
   m_Layer: 0
   m_Name: Cell
   m_TagString: Untagged
@@ -121,3 +122,16 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   isSelected: 0
+--- !u!65 &5712735682460705198
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1606679475906566052}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 0.99999994}
+  m_Center: {x: 0, y: -0.5, z: 0.000000029802322}

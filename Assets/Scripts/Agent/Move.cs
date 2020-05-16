@@ -7,7 +7,7 @@ public class Move : Ability
     [Tooltip("Time that it takes to move between two cells.")]
     public float movementDuration = 0.25f;
 
-    private Agent agent;
+    private Agent _agent;
     private int pathIndex;
     private float movementTimer;
     private bool castedFromOther;
@@ -18,6 +18,8 @@ public class Move : Ability
     private void Awake()
     {
         Type = AbilityType.Move;
+        _agent = GetComponent<Agent>();
+
         Reset();
     }
 
@@ -29,7 +31,6 @@ public class Move : Ability
 
     public override void Reset()
     {
-        agent = null;
         MovementPoints = range;
         movementTimer = 0f;
         pathIndex = 0;
@@ -122,12 +123,6 @@ public class Move : Ability
     {
         Casting = true;
         source.Type = CellType.Ground;
-        agent = MapManager.Instance.AgentAt(source);
-        if (agent == null)
-        {
-            Debug.LogErrorFormat("Did not find agent at {0}", source.Position);
-            return;
-        }
         movementTimer = 0f;
         pathIndex = 0;
     }
@@ -142,7 +137,7 @@ public class Move : Ability
 
         if (pathIndex < Path.Count)
         {
-            Cell current = MapManager.Instance.CellAt(agent.Position);
+            Cell current = MapManager.Instance.CellAt(_agent.Position);
             if (current == null)
             {
                 Debug.Log("current is null");
@@ -157,8 +152,8 @@ public class Move : Ability
             }
 
             transform.position = Vector3.Lerp(
-                Utilities.ToWorldPosition(current.Position, transform),
-                Utilities.ToWorldPosition(next.Position, transform),
+                current.Position.ToWorldPosition(transform),
+                next.Position.ToWorldPosition(transform),
                 movementTimer / movementDuration);
 
             if (movementTimer < movementDuration)
@@ -166,7 +161,7 @@ public class Move : Ability
             else
             {
                 movementTimer -= movementDuration;
-                agent.Position = next.Position;
+                _agent.Position = next.Position;
                 ++pathIndex;
             }
         }
@@ -174,22 +169,19 @@ public class Move : Ability
         {
             FinishedMoving();
         }
-
-        if (agent != null)
-        {
-            FinishedMoving();
-        }
     }
 
     private void FinishedMoving()
     {
+        Debug.Log("Finished moving.");
+
         Casting = false;
         MovementPoints -= Path.Count;
         Path = null;
         pathIndex = 0;
         movementTimer = 0f;
-        agent.Position = Utilities.ToMapPosition(transform.position);
-        MapManager.Instance.CellAt(agent.Position).Type = CellType.Agent;
+        _agent.Position = Utilities.ToMapPosition(transform.position);
+        MapManager.Instance.CellAt(_agent.Position).Type = CellType.Agent;
 
         if (castedFromOther)
         {

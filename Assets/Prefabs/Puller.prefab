@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 4444039238973867914}
   - component: {fileID: 6602647622877776119}
   - component: {fileID: 321665165675273424}
-  - component: {fileID: 4704377770095477958}
   m_Layer: 0
   m_Name: Puller
   m_TagString: Untagged
@@ -57,6 +56,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -68,6 +68,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -105,19 +106,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8627467af09d16940b60c08f3d5d67ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  range: 2
-  movementDuration: 0.25
---- !u!114 &4704377770095477958
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8911662228182176663}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 68811be6d606fc84a8b3a8507694382b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  range: 5
-  power: 3
+  range: 40
+  movementDuration: 0.15

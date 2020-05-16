@@ -19,6 +19,6 @@ public static class GameEvents
         Agent caster;
         Cell source, target;
     }
-    public class CastEvent : UnityEvent<CastData> {}
+    public class CastEvent : UnityEvent<CastData> { }
     public static readonly CastEvent FinishedCasting = new CastEvent();
 }
