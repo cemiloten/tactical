@@ -33,6 +33,6 @@ public class Cell : MonoBehaviour
     {
         Position = pos;
         Type = type;
-        transform.position = Utilities.ToWorldPosition(pos, transform);
+        transform.position = pos.ToWorldPosition();
     }
 }

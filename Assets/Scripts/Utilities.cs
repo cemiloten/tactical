@@ -38,9 +38,8 @@ public static class Utilities
        return new Vector2Int((int)pos.x, (int)pos.z);
     }
 
-    public static Vector3 ToWorldPosition(this Vector2Int pos, Transform transform = null)
+    public static Vector3 ToWorldPosition(this Vector2Int pos)
     {
-        float y = transform ? transform.position.y : 0f;
-        return new Vector3(pos.x + 0.5f, y, pos.y + 0.5f);
+        return new Vector3(pos.x + 0.5f, 0f, pos.y + 0.5f);
     }
 }

@@ -1,11 +1,6 @@
-using System.Linq;
-using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using Random = UnityEngine.Random;
-
 
 public class MapManager : MonoBehaviourSingleton<MapManager>
 {
@@ -15,8 +10,6 @@ public class MapManager : MonoBehaviourSingleton<MapManager>
 
     private Cell[] _cells;
     private List<Cell> _groundCells;
-
-    public List<Cell> VisualPath { get; set; }
 
     protected override void OnAwake()
     {
@@ -37,24 +30,13 @@ public class MapManager : MonoBehaviourSingleton<MapManager>
         _cells = new Cell[width * height];
         int index = 0;
         for (int y = 0; y < height; ++y)
-            for (int x = 0; x < width; ++x)
-            {
-                Cell cell = Instantiate(cellPrefab);
-                cell.Initialize(new Vector2Int(x, y));
-                cell.transform.parent = transform;
+        for (int x = 0; x < width; ++x)
+        {
+            Cell cell = Instantiate(cellPrefab, transform, true);
+            cell.Initialize(new Vector2Int(x, y));
 
-                _cells[index++] = cell;
-            }
-    }
-
-    public void Cleanup()
-    {
-        if (_cells == null)
-            return;
-
-        for (int i = 0; i < _cells.Length; ++i)
-            Destroy(_cells[i].gameObject);
-        _cells = null;
+            _cells[index++] = cell;
+        }
     }
 
     public (bool, Vector2Int) ReserveRandomCell(CellType cellType, Agent agent)
@@ -72,26 +54,7 @@ public class MapManager : MonoBehaviourSingleton<MapManager>
         return (true, c.Position);
     }
 
-    private void PlaceAgent(Agent agent, Cell cell)
-    {
-        if (agent == null)
-        {
-            Debug.LogError("[agent] is null");
-            return;
-        }
-
-        if (cell == null)
-        {
-            Debug.LogError("[cell] is null");
-            return;
-        }
-
-        cell.Type = CellType.Agent;
-        agent.Position = cell.Position;
-        agent.transform.position = Utilities.ToWorldPosition(cell.Position, agent.transform);
-    }
-
-    public bool IsPositionOnMap(Vector2Int pos)
+    private bool IsPositionOnMap(Vector2Int pos)
     {
         return pos.x >= 0 && pos.x < width
             && pos.y >= 0 && pos.y < height;
@@ -144,7 +107,7 @@ public class MapManager : MonoBehaviourSingleton<MapManager>
             CellAt(cell.Position.x + 1, cell.Position.y), // right
             CellAt(cell.Position.x, cell.Position.y + 1), // top
             CellAt(cell.Position.x - 1, cell.Position.y), // left
-            CellAt(cell.Position.x, cell.Position.y - 1)  // bottom
+            CellAt(cell.Position.x, cell.Position.y - 1) // bottom
         };
     }
 
@@ -172,7 +135,7 @@ public class MapManager : MonoBehaviourSingleton<MapManager>
             int amount = range - Mathf.Abs(i);
             for (int j = -amount; j <= amount; ++j)
             {
-                Cell cell = MapManager.Instance.CellAt(new Vector2Int(pos.x + j, pos.y));
+                Cell cell = Instance.CellAt(new Vector2Int(pos.x + j, pos.y));
                 if (cell != null && cell.Walkable)
                 {
                     if (cell == source && !withSource)
@@ -186,7 +149,7 @@ public class MapManager : MonoBehaviourSingleton<MapManager>
 
     public Agent AgentAt(Cell cell)
     {
-        return cell.Agent ?? null;
+        return cell.Agent;
     }
 
     private void DrawMap()

@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -216,98 +214,95 @@ public static class PathMaker
         }
     }
 
-    public static List<Cell> AStarToNearestNeighbour(Cell _start, Cell _goal)
+    // public static List<Cell> AStarToNearestNeighbour(Cell _start, Cell _goal)
+    // {
+    //     if (_start == null)
+    //     {
+    //         Debug.LogError("[_start] is null");
+    //         return null;
+    //     }
+    //     if (_goal == null)
+    //     {
+    //         Debug.LogError("[_goal] is null");
+    //         return null;
+    //     }
+    //
+    //     Node start = new Node(_start);
+    //     Node goal = new Node(_goal);
+    //     List<Node> neighbours = GetNeighbours(goal);
+    //
+    //     Node nearest = null;
+    //     for (int n = 0; n < neighbours.Count; ++n)
+    //     {
+    //         if (neighbours[n] != null && neighbours[n].cell != null)
+    //         {
+    //             nearest = neighbours[n];
+    //             break;
+    //         }
+    //     }
+    //     if (nearest == null)
+    //         // Every neighbour of target is null
+    //         return null;
+    //
+    //     // Compare distance to other non null neighbours
+    //     for (int n = 0; n < neighbours.Count; ++n)
+    //     {
+    //         if (neighbours[n] != null
+    //             && neighbours[n].cell != null
+    //             && neighbours[n].cell.Walkable
+    //             && CalculateHeuristic(start, neighbours[n]) < CalculateHeuristic(start, nearest))
+    //         {
+    //             nearest = neighbours[n];
+    //         }
+    //     }
+    //
+    //     if (nearest == null)
+    //         return null;
+    //     return AStar(_start, nearest.cell);
+    // }
+
+    public static bool AStar(Cell _start, Cell _goal, out List<Cell> path)
     {
+        path = null;
+
         if (_start == null)
         {
             Debug.LogError("[_start] is null");
-            return null;
-        }
-        if (_goal == null)
-        {
-            Debug.LogError("[_goal] is null");
-            return null;
-        }
-
-        Node start = new Node(_start);
-        Node goal = new Node(_goal);
-        List<Node> neighbours = GetNeighbours(goal);
-
-        Node nearest = null;
-        for (int n = 0; n < neighbours.Count; ++n)
-        {
-            if (neighbours[n] != null && neighbours[n].cell != null)
-            {
-                nearest = neighbours[n];
-                break;
-            }
-        }
-        if (nearest == null)
-            // Every neighbour of target is null
-            return null;
-
-        // Compare distance to other non null neighbours
-        for (int n = 0; n < neighbours.Count; ++n)
-        {
-            if (neighbours[n] != null
-                && neighbours[n].cell != null
-                && neighbours[n].cell.Walkable
-                && CalculateHeuristic(start, neighbours[n]) < CalculateHeuristic(start, nearest))
-            {
-                nearest = neighbours[n];
-            }
-        }
-
-        if (nearest == null)
-            return null;
-        return AStar(_start, nearest.cell);
-    }
-
-    public static List<Cell> AStar(Cell _start, Cell _goal)
-    {
-        if (_start == null)
-        {
-            Debug.LogError("[_start] is null");
-            return null;
+            return false;
         }
 
         if (_goal == null)
         {
             Debug.LogError("[_goal] is null");
-            return null;
+            return false;
         }
 
-        if (!_goal.Walkable)
-        {
-            Debug.LogError("[_goal] is not walkable");
-            return null;
-        }
-
-        MapManager manager = MapManager.Instance;
-        Node start = new Node(_start);
-        Node goal = new Node(_goal);
-        Node current = new Node();
-        List<Node> open = new List<Node>() { start };
-        List<Node> closed = new List<Node>();
+        var start = new Node(_start);
+        var goal = new Node(_goal);
+        var open = new List<Node>() { start };
+        var closed = new List<Node>();
 
         while (open.Count > 0)
         {
-            current = open[0];
-            int current_index = 0;
+            Node current = open[0];
+            int currentIndex = 0;
 
             for (int i = 0; i < open.Count; ++i)
             {
                 if (open[i].f < current.f)
                 {
                     current = open[i];
-                    current_index = i;
+                    currentIndex = i;
                 }
             }
-            open.RemoveAt(current_index);
+            open.RemoveAt(currentIndex);
             closed.Add(current);
 
             if (current.Equals(goal))
-                return InvertedPathFrom(current);
+            {
+                path = InvertedPathFrom(current);
+                return true;
+            }
 
             List<Node> neighbours = GetNeighbours(current);
             for (int n = 0; n < neighbours.Count; ++n)
@@ -341,7 +336,7 @@ public static class PathMaker
         }
 
         Debug.LogError("Failed: nothing to return");
-        return null;
+        return false;
     }
 
     private static List<Node> GetNeighbours(Node node)
