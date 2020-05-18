@@ -1,28 +1,27 @@
+using Agents;
 using UnityEngine;
 
-public enum AbilityType
-{
+namespace Abilities {
+public enum AbilityType {
     None,
     Move,
-    Action
+    BasicAttack
 }
 
-public abstract class Ability : MonoBehaviour
-{
+public abstract class Ability : MonoBehaviour {
+    protected Agent Agent;
     public int range = 0;
 
     public bool Casting { get; protected set; }
     public AbilityType Type { get; private set; }
 
-    protected Agent Agent;
-
     protected abstract AbilityType SetType();
 
     public abstract bool Cast(Cell source, Cell target);
 
-    private void Awake()
-    {
+    private void Awake() {
         Type = SetType();
         Agent = GetComponent<Agent>();
     }
+}
 }
