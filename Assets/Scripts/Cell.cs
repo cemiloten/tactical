@@ -5,7 +5,6 @@ using UnityEngine;
 public enum CellType {
     Ground,
     Agent,
-    Obstacle
 }
 
 public class Cell : MonoBehaviour {
