@@ -560,6 +560,7 @@ GameObject:
   - component: {fileID: 534669904}
   - component: {fileID: 534669903}
   - component: {fileID: 534669906}
+  - component: {fileID: 534669907}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -600,7 +601,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 50
-  field of view: 60
+  field of view: 40
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -626,7 +627,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
   m_LocalRotation: {x: 0.42550546, y: -0.2013584, z: 0.09771322, w: 0.87684214}
-  m_LocalPosition: {x: 7.484744, y: 9.8, z: -4.109235}
+  m_LocalPosition: {x: 8.04, y: 14.29, z: -6.54}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -652,7 +653,7 @@ MonoBehaviour:
     RequiredSelectable: {fileID: 0}
   ScreenDepth:
     Conversion: 3
-    Camera: {fileID: 0}
+    Camera: {fileID: 534669904}
     Object: {fileID: 1109396950}
     Layers:
       serializedVersion: 2
@@ -662,6 +663,42 @@ MonoBehaviour:
   Dampening: 10
   Inertia: 0
   remainingDelta: {x: 0, y: 0, z: 0}
+--- !u!114 &534669907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 534669902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 272bc65dbf5cbca45840c32881688950, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Use:
+    Filter: 0
+    IgnoreStartedOverGui: 1
+    RequiredFingerCount: 0
+    RequiredMouseButtons: 0
+    RequiredSelectable: {fileID: 0}
+  Camera: {fileID: 534669904}
+  Zoom: 40
+  Dampening: 6
+  Clamp: 1
+  ClampMin: 30
+  ClampMax: 100
+  Relative: 0
+  IgnoreZ: 0
+  ScreenDepth:
+    Conversion: 1
+    Camera: {fileID: 0}
+    Object: {fileID: 0}
+    Layers:
+      serializedVersion: 2
+      m_Bits: 4294967291
+    Distance: 0
+  currentZoom: 40
+  remainingTranslation: {x: 0, y: 0, z: 0}
 --- !u!1 &752816572
 GameObject:
   m_ObjectHideFlags: 0
@@ -926,10 +963,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e167f5141e8fbbb429990fdd6dca01c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ClampX: 1
+  ClampX: 0
   MinX: -8
   MaxX: 8
-  ClampY: 1
+  ClampY: 0
   MinY: -8
   MaxY: 8
   SnapX: 0
