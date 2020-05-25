@@ -1,7 +1,9 @@
+using System;
 using Agents;
 using UnityEngine;
 
 namespace Abilities {
+
 public enum AbilityType {
     None,
     Move,
@@ -17,11 +19,16 @@ public abstract class Ability : MonoBehaviour {
 
     protected abstract AbilityType SetType();
 
-    public abstract bool Cast(Cell source, Cell target);
+    public abstract void Cast(Cell source, Cell target, Action onCastEnd = null);
+
+    public bool IsInRange(Cell source, Cell target) {
+        return range >= Utilities.Distance(source.Position, target.Position);
+    }
 
     private void Awake() {
         Type = SetType();
         Agent = GetComponent<Agent>();
     }
 }
+
 }

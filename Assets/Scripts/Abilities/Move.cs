@@ -1,8 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 namespace Abilities {
+
 public class Move : Ability {
     [Tooltip("Time that it takes to move between two cells.")]
     public float movementDuration = 0.25f;
@@ -11,23 +14,23 @@ public class Move : Ability {
         return AbilityType.Move;
     }
 
-    public override bool Cast(Cell source, Cell target) {
+    public override void Cast(Cell source, Cell target, Action onCastEnd = null) {
         if (Casting) {
             Debug.LogWarning("Cannot accept new move while moving");
-            return false;
+            return;
         }
 
         if (!target.Walkable) {
             Debug.LogError("Target cell is not Walkable");
-            return false;
+            return;
         }
 
         if (!PathMaker.AStar(source, target, out List<Cell> cells))
-            return false;
+            return;
 
         Vector3[] path = MakePath(cells);
         if (path == null || path.Length < 2)
-            return false;
+            return;
 
         source.Type = CellType.Ground;
 
@@ -35,9 +38,8 @@ public class Move : Ability {
         target.Agent = Agent;
         Agent.Position = target.Position;
 
-        StartCoroutine(_Move(path));
-
-        return true;
+        transform.DOPath(path, path.Length * movementDuration)
+            .OnComplete(() => onCastEnd?.Invoke());
     }
 
     private Vector3[] MakePath(IReadOnlyList<Cell> cells) {
@@ -72,4 +74,5 @@ public class Move : Ability {
         Casting = false;
     }
 }
+
 }

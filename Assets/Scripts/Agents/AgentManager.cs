@@ -2,20 +2,41 @@
 using UnityEngine;
 
 namespace Agents {
+
 public class AgentManager : MonoBehaviourSingleton<AgentManager> {
     private readonly List<Agent> _agents = new List<Agent>();
+
 
     private int _currentAgentIndex;
     [SerializeField] private int agentCount = 3;
     [SerializeField] private Agent agentPrefab = default;
-    private Agent CurrentAgent => _agents[_currentAgentIndex];
+    [SerializeField] private Player player = default;
+    [SerializeField] private TurnIndicator turnIndicator = default;
+    public static Agent CurrentAgent => Instance._agents[Instance._currentAgentIndex];
+    public static Vector2Int PlayerPosition => Instance.player.Position;
 
-    protected override void OnAwake() {
+    protected override void Awake() {
+        base.Awake();
+
+        GameEvents.OnAgentEndTurn.AddListener(OnAgentEndTurn);
+        GameEvents.OnAgentDead.AddListener(OnAgentDead);
+
         _agents.Capacity = agentCount;
-        for (int i = 0; i < agentCount; i++)
-            _agents.Add(Instantiate(agentPrefab));
+        _agents.Add(player);
+        for (int i = 0; i < agentCount; i++) {
+            Agent agent = Instantiate(agentPrefab);
+            agent.name = $"NPC {i}";
 
-        GameEvents.CellSelected.AddListener(OnCellSelected);
+            _agents.Add(agent);
+        }
+    }
+
+    private void OnAgentDead(Agent agent) {
+        _agents.Remove(agent);
+    }
+
+    private void OnAgentEndTurn(Agent agent) {
+        NextAgent();
     }
 
     private void Start() {
@@ -30,17 +51,19 @@ public class AgentManager : MonoBehaviourSingleton<AgentManager> {
             agent.transform.position = agent.Position.ToWorldPosition();
         }
 
+        player.transform.position = Vector2Int.zero.ToWorldPosition();
+        player.Position = Vector2Int.zero;
+
         _currentAgentIndex = 0;
+        CurrentAgent.StartTurn();
+        turnIndicator.SetAgent(CurrentAgent.transform);
     }
 
     private void NextAgent() {
         _currentAgentIndex = (_currentAgentIndex + 1) % _agents.Count;
-    }
-
-    private void OnCellSelected(Cell cell) {
-        Agent curr = CurrentAgent;
-        curr.CastCurrentAbility(MapManager.Instance.CellAt(curr.Position), cell);
-        // NextAgent();
+        CurrentAgent.StartTurn();
+        turnIndicator.SetAgent(CurrentAgent.transform);
     }
 }
+
 }

@@ -4,25 +4,32 @@ using Abilities;
 using UnityEngine;
 
 namespace Agents {
-public class Agent : MonoBehaviour {
-    private Dictionary<AbilityType, Ability> _abilities;
-    private Ability _currentAbility;
+
+public abstract class Agent : MonoBehaviour {
+    protected Dictionary<AbilityType, Ability> Abilities;
     [SerializeField] private int health = 3;
 
     public Vector2Int Position { get; set; }
 
-    public bool Casting => _abilities.Values.Any(ability => ability.Casting);
+    public bool Casting => Abilities.Values.Any(ability => ability.Casting);
 
     private void Start() {
-        _abilities = GetAbilities();
+        Abilities = GetAbilities();
     }
+
+    public void StartTurn() {
+        Debug.Log($"My turn: {this}");
+        OnTurnStart();
+        GameEvents.OnAgentStartTurn.Invoke(this);
+    }
+
+    protected abstract void OnTurnStart();
 
     private Dictionary<AbilityType, Ability> GetAbilities() {
         Ability[] components = GetComponents<Ability>();
 
         if (components.Length < 1) {
             Debug.LogWarningFormat("No component of type [Ability] was found on {0}", this);
-
             return null;
         }
 
@@ -34,24 +41,22 @@ public class Agent : MonoBehaviour {
     }
 
     public void Cast(AbilityType abilityType, Cell source, Cell target) {
-        Ability ability = GetAbility(abilityType);
-        if (ability == null)
+        if (!GetAbility(abilityType, out Ability ability))
             return;
 
-        ability.Cast(source, target);
+        ability.Cast(source, target, EndTurn);
     }
 
-    public void CastCurrentAbility(Cell source, Cell target) {
-        _currentAbility.Cast(source, target);
+    protected void EndTurn() {
+        GameEvents.OnAgentEndTurn.Invoke(this);
     }
 
-
-    private Ability GetAbility(AbilityType type) {
+    protected bool GetAbility(AbilityType type, out Ability ability) {
+        ability = null;
         if (type == AbilityType.None)
-            return null;
+            return false;
 
-        _abilities.TryGetValue(type, out Ability ability);
-        return ability;
+        return Abilities.TryGetValue(type, out ability);
     }
 
     public void LoseHealth(int power) {
@@ -62,12 +67,9 @@ public class Agent : MonoBehaviour {
     }
 
     private void Die() {
-        GameEvents.AgentDead.Invoke(this);
+        GameEvents.OnAgentDead.Invoke(this);
         Destroy(gameObject);
     }
-
-    public void SetCurrentAbility(AbilityType abilityType) {
-        _currentAbility = GetAbility(abilityType);
-    }
 }
+
 }

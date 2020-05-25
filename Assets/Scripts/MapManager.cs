@@ -10,7 +10,8 @@ public class MapManager : MonoBehaviourSingleton<MapManager> {
     [SerializeField] public int height;
     [SerializeField] public int width;
 
-    protected override void OnAwake() {
+    protected override void Awake() {
+        base.Awake();
         InstantiateCells();
         _groundCells = _cells.ToList();
     }

@@ -2,9 +2,10 @@
 using UnityEngine.Events;
 
 public static class GameEvents {
-    public static readonly UnityEvent TurnEnd = new UnityEvent();
     public static readonly CellEvent CellSelected = new CellEvent();
-    public static readonly AgentEvent AgentDead = new AgentEvent();
+    public static readonly AgentEvent OnAgentDead = new AgentEvent();
+    public static readonly AgentEvent OnAgentStartTurn = new AgentEvent();
+    public static readonly AgentEvent OnAgentEndTurn = new AgentEvent();
     public static readonly CastEvent FinishedCasting = new CastEvent();
 
     public class CellEvent : UnityEvent<Cell> {}
