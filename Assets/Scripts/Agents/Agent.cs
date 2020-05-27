@@ -20,7 +20,7 @@ public abstract class Agent : MonoBehaviour {
     public void StartTurn() {
         Debug.Log($"My turn: {this}");
         OnTurnStart();
-        GameEvents.OnAgentStartTurn.Invoke(this);
+        GameEvents.OnAgentStartTurn(this);
     }
 
     protected abstract void OnTurnStart();
@@ -48,7 +48,7 @@ public abstract class Agent : MonoBehaviour {
     }
 
     protected void EndTurn() {
-        GameEvents.OnAgentEndTurn.Invoke(this);
+        GameEvents.OnAgentEndTurn(this);
     }
 
     protected bool GetAbility(AbilityType type, out Ability ability) {
@@ -59,16 +59,15 @@ public abstract class Agent : MonoBehaviour {
         return Abilities.TryGetValue(type, out ability);
     }
 
-    public void LoseHealth(int power) {
-        Debug.Log($"Lost {power} health");
-        health -= power;
+    public void LoseHealth(int amount) {
+        Debug.Log($"Lost {amount} health");
+        health -= amount;
         if (health <= 0)
             Die();
     }
 
     private void Die() {
-        GameEvents.OnAgentDead.Invoke(this);
-        Destroy(gameObject);
+        GameEvents.OnAgentDead(this);
     }
 }
 

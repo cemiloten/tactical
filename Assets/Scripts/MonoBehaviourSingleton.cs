@@ -5,11 +5,11 @@ public abstract class MonoBehaviourSingleton<T> : MonoBehaviour where T : Compon
 
     protected virtual void Awake() {
         if (Instance != null) {
-            Debug.LogError($"Instance already exits on object: {Instance.name}");
+            Debug.LogWarning($"Instance of {typeof(T)} already exits, destroying self.");
+            Destroy(gameObject);
             return;
         }
 
-        DontDestroyOnLoad(gameObject);
         Instance = this as T;
     }
 }

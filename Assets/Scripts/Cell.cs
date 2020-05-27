@@ -4,7 +4,7 @@ using UnityEngine;
 
 public enum CellType {
     Ground,
-    Agent,
+    Agent
 }
 
 public class Cell : MonoBehaviour {
@@ -22,7 +22,7 @@ public class Cell : MonoBehaviour {
     }
 
     private void OnSelect(LeanFinger finger) {
-        GameEvents.CellSelected.Invoke(this);
+        GameEvents.OnCellSelected(this);
     }
 
     public void Initialize(Vector2Int pos, CellType type = CellType.Ground) {

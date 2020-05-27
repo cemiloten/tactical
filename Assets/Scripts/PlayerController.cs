@@ -5,21 +5,30 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
     private AbilityType _currentType = AbilityType.None;
-    [SerializeField] private Button attack;
-    [SerializeField] private Button move;
-    [SerializeField] private Player player;
+    [SerializeField] private Button attack = default;
+    [SerializeField] private Button move = default;
+    [SerializeField] private Player player = default;
 
     private void Awake() {
         move.onClick.AddListener(OnMove);
         attack.onClick.AddListener(OnAttack);
-        GameEvents.CellSelected.AddListener(OnCellSelected);
     }
 
-    private void OnCellSelected(Cell cell) {
-        if (ReferenceEquals(AgentManager.CurrentAgent, player))
-            player.Cast(_currentType, MapManager.Instance.CellAt(player.Position), cell);
-        else
+    private void OnEnable() {
+        GameEvents.CellSelected += CellSelected;
+    }
+
+    private void OnDisable() {
+        GameEvents.CellSelected -= CellSelected;
+    }
+
+    private void CellSelected(Cell cell) {
+        if (!ReferenceEquals(AgentManager.CurrentAgent, player)) {
             Debug.LogWarning("Not your turn!");
+            return;
+        }
+
+        player.Cast(_currentType, MapManager.Instance.CellAt(player.Position), cell);
     }
 
     private void OnMove() {

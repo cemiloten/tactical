@@ -10,9 +10,7 @@ public class Move : Ability {
     [Tooltip("Time that it takes to move between two cells.")]
     public float movementDuration = 0.25f;
 
-    protected override AbilityType SetType() {
-        return AbilityType.Move;
-    }
+    protected override AbilityType SetType() => AbilityType.Move;
 
     public override void Cast(Cell source, Cell target, Action onCastEnd = null) {
         if (Casting) {

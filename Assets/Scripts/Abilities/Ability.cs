@@ -21,9 +21,8 @@ public abstract class Ability : MonoBehaviour {
 
     public abstract void Cast(Cell source, Cell target, Action onCastEnd = null);
 
-    public bool IsInRange(Cell source, Cell target) {
-        return range >= Utilities.Distance(source.Position, target.Position);
-    }
+    public bool IsInRange(Cell source, Cell target) =>
+        range >= Utilities.Distance(source.Position, target.Position);
 
     private void Awake() {
         Type = SetType();

@@ -49,10 +49,9 @@ public class MapManager : MonoBehaviourSingleton<MapManager> {
         return (true, c.Position);
     }
 
-    private bool IsPositionOnMap(Vector2Int pos) {
-        return pos.x >= 0 && pos.x < width
-            && pos.y >= 0 && pos.y < height;
-    }
+    private bool IsPositionOnMap(Vector2Int pos) =>
+        pos.x >= 0 && pos.x < width
+        && pos.y >= 0 && pos.y < height;
 
     public bool AreNeighbours(Cell c1, Cell c2) {
         if (c1 == null || c2 == null) {
@@ -83,18 +82,15 @@ public class MapManager : MonoBehaviourSingleton<MapManager> {
         return _cells[pos.x + pos.y * width];
     }
 
-    public Cell CellAt(int x, int y) {
-        return CellAt(new Vector2Int(x, y));
-    }
+    public Cell CellAt(int x, int y) => CellAt(new Vector2Int(x, y));
 
-    public List<Cell> GetNeighbours(Cell cell) {
-        return new List<Cell> {
+    public List<Cell> GetNeighbours(Cell cell) =>
+        new List<Cell> {
             CellAt(cell.Position.x + 1, cell.Position.y), // right
             CellAt(cell.Position.x, cell.Position.y + 1), // top
             CellAt(cell.Position.x - 1, cell.Position.y), // left
             CellAt(cell.Position.x, cell.Position.y - 1) // bottom
         };
-    }
 
     public List<Cell> GetCastRange(Cell source, int range = 1, bool withSource = false) {
         if (source == null) {
@@ -126,9 +122,7 @@ public class MapManager : MonoBehaviourSingleton<MapManager> {
         return cellsInRange;
     }
 
-    public Agent AgentAt(Cell cell) {
-        return cell.Agent;
-    }
+    public Agent AgentAt(Cell cell) => cell.Agent;
 
     private void DrawMap() {
         Vector3 widthLine = Vector3.right * width;

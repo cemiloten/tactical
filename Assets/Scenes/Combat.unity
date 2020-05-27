@@ -196,10 +196,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec1bcc5d8959147edb3cffba3ea955d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 1371864581}
   agentCount: 3
   agentPrefab: {fileID: -1143160767006365543, guid: d3982da90dddb944e83f57bebb4196c1,
     type: 3}
+  player: {fileID: 1371864581}
   turnIndicator: {fileID: 246566323}
 --- !u!4 &264288071
 Transform:
@@ -435,10 +435,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 435926711}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b5f6aea7988442ab22c3205d0c38889, type: 3}
+  m_Script: {fileID: 11500000, guid: a1b0641ef95e42b9b8ac3b8f0b1615a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentAgentText: {fileID: 716264452}
 --- !u!114 &435926714
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -689,13 +688,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
-  m_LocalRotation: {x: 0.3699718, y: 0.47763807, z: -0.2317836, w: 0.7624036}
-  m_LocalPosition: {x: -6.23, y: 14.29, z: -3.89}
+  m_LocalRotation: {x: 0.32217118, y: 0.14266773, z: -0.049180966, w: 0.93457633}
+  m_LocalPosition: {x: -0.11, y: 14.289999, z: -9.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 51.772003, y: 64.133, z: 0}
+  m_LocalEulerAnglesHint: {x: 38.041, y: 17.359001, z: 0}
 --- !u!114 &534669906
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1445,16 +1444,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 8105429000960036389, guid: 1aa6b316c9fb7344ebfff3e24a2852ab,
-        type: 3}
-      propertyPath: maxDuration
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 8105429000960036389, guid: 1aa6b316c9fb7344ebfff3e24a2852ab,
-        type: 3}
-      propertyPath: minDuration
-      value: 0.1
-      objectReference: {fileID: 0}
     - target: {fileID: 8540908555497788016, guid: 1aa6b316c9fb7344ebfff3e24a2852ab,
         type: 3}
       propertyPath: m_Name
@@ -1804,8 +1793,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f69f11eb7dc945768b506fe3b944cc0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boom: {fileID: 4503230113549188212, guid: 3728a75b91b2ff249b7778f07fe2df4f, type: 3}
   attack: {fileID: 7492708305666412604, guid: 702e476552cb6df45ad6a0fc4a9fdd4f, type: 3}
+  boom: {fileID: 4503230113549188212, guid: 3728a75b91b2ff249b7778f07fe2df4f, type: 3}
 --- !u!4 &1833098219
 Transform:
   m_ObjectHideFlags: 0
