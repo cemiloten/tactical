@@ -7,11 +7,13 @@ public class PlayerController : MonoBehaviour {
     private AbilityType _currentType = AbilityType.None;
     [SerializeField] private Button attack = default;
     [SerializeField] private Button move = default;
+    [SerializeField] private Button pass = default;
     [SerializeField] private Player player = default;
 
     private void Awake() {
         move.onClick.AddListener(OnMove);
         attack.onClick.AddListener(OnAttack);
+        pass.onClick.AddListener(OnPass);
     }
 
     private void OnEnable() {
@@ -37,5 +39,9 @@ public class PlayerController : MonoBehaviour {
 
     private void OnAttack() {
         _currentType = AbilityType.BasicAttack;
+    }
+
+    private void OnPass() {
+        player.EndTurn();
     }
 }

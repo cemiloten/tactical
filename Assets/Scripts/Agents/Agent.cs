@@ -6,12 +6,17 @@ using UnityEngine;
 namespace Agents {
 
 public abstract class Agent : MonoBehaviour {
-    protected Dictionary<AbilityType, Ability> Abilities;
+    private Dictionary<AbilityType, Ability> Abilities;
+    [SerializeField] private int actionPoints = 5;
     [SerializeField] private int health = 3;
+
+    [SerializeField] private int startActionPoints = 5;
 
     public Vector2Int Position { get; set; }
 
     public bool Casting => Abilities.Values.Any(ability => ability.Casting);
+
+    public int ActionPoints => actionPoints;
 
     private void Start() {
         Abilities = GetAbilities();
@@ -19,6 +24,8 @@ public abstract class Agent : MonoBehaviour {
 
     public void StartTurn() {
         Debug.Log($"My turn: {this}");
+
+        actionPoints = startActionPoints;
         OnTurnStart();
         GameEvents.OnAgentStartTurn(this);
     }
@@ -40,14 +47,28 @@ public abstract class Agent : MonoBehaviour {
         return abilities;
     }
 
-    public void Cast(AbilityType abilityType, Cell source, Cell target) {
+    public void Cast(AbilityType abilityType, Cell source, Cell target, bool endTurn = false) {
         if (!GetAbility(abilityType, out Ability ability))
             return;
 
-        ability.Cast(source, target, EndTurn);
+        int cost = ability.HasDynamicCost
+            ? ability.CalculateDynamicCost(source, target)
+            : ability.cost;
+
+        if (actionPoints < cost) {
+            Debug.LogError($"Cannot afford to cast {abilityType}.");
+            return;
+        }
+
+        actionPoints -= cost;
+
+        if (endTurn)
+            ability.Cast(source, target, EndTurn);
+        else
+            ability.Cast(source, target);
     }
 
-    protected void EndTurn() {
+    public void EndTurn() {
         GameEvents.OnAgentEndTurn(this);
     }
 

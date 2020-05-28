@@ -18,12 +18,14 @@ public class NPC : Agent {
 
         Cell source = MapManager.Instance.CellAt(Position);
         Cell target = MapManager.Instance.CellAt(AgentManager.PlayerPosition);
+
         if (!ability.IsInRange(source, target)) {
             StartCoroutine(_EndTurn(1f));
             return;
         }
 
-        ability.Cast(source, target, EndTurn);
+        // todo: cleanup AI logic later
+        ability.Cast(source, target, EndTurn, true);
     }
 
     private IEnumerator _EndTurn(float waitTime) {

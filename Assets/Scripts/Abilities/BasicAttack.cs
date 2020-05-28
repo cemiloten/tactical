@@ -8,13 +8,16 @@ namespace Abilities {
 public class BasicAttack : Ability {
     [SerializeField] private float maxDuration = 2f;
     [SerializeField] private float maxJump = 5f;
+    [Space]
     [SerializeField] private float minDuration = 0.5f;
+    [Space]
     [SerializeField] private float minJump = 1f;
     [SerializeField] private int power = 1;
 
     protected override AbilityType SetType() => AbilityType.BasicAttack;
 
-    public override void Cast(Cell source, Cell target, Action onCastEnd = null) {
+    public override void Cast(Cell source, Cell target, Action onCastEnd = null,
+                              bool endTurn = false) {
         Transform attackFx = EffectsManager.Attack(source);
         attackFx.DOJump(target.Position.ToWorldPosition(),
                         Random.Range(minJump, maxJump), 1,

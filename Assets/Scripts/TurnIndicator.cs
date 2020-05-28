@@ -13,7 +13,6 @@ public class TurnIndicator : MonoBehaviour {
         GameEvents.Defeat += OnEndGame;
     }
 
-
     private void OnDisable() {
         GameEvents.Victory -= OnEndGame;
         GameEvents.Defeat -= OnEndGame;

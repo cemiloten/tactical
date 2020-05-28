@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
@@ -11,8 +10,13 @@ public class Move : Ability {
     public float movementDuration = 0.25f;
 
     protected override AbilityType SetType() => AbilityType.Move;
+    protected override bool SetHasDynamicCost() => true;
 
-    public override void Cast(Cell source, Cell target, Action onCastEnd = null) {
+    public override int CalculateDynamicCost(Cell source, Cell target) =>
+        Utilities.Distance(source, target);
+
+    public override void Cast(Cell source, Cell target, Action onCastEnd = null,
+                              bool endTurn = false) {
         if (Casting) {
             Debug.LogWarning("Cannot accept new move while moving");
             return;
@@ -26,19 +30,22 @@ public class Move : Ability {
         if (!PathMaker.AStar(source, target, out List<Cell> cells))
             return;
 
-        Vector3[] path = MakePath(cells);
-        if (path == null || path.Length < 2)
+        if (cells == null || cells.Count < 1)
             return;
 
-        source.Type = CellType.Ground;
-
-        target.Type = CellType.Agent;
-        target.Agent = Agent;
-        Agent.Position = target.Position;
-
+        Vector3[] path = MakePath(cells);
         transform.DOPath(path, path.Length * movementDuration)
-            .OnComplete(() => onCastEnd?.Invoke());
+            .SetEase(Ease.InOutSine)
+            .OnComplete(delegate {
+                source.Type = CellType.Ground;
+                target.Type = CellType.Agent;
+                target.Agent = Agent;
+                Agent.Position = target.Position;
+
+                onCastEnd?.Invoke();
+            });
     }
+
 
     private Vector3[] MakePath(IReadOnlyList<Cell> cells) {
         var path = new Vector3[cells.Count];
@@ -46,30 +53,6 @@ public class Move : Ability {
             path[i] = cells[i].Position.ToWorldPosition();
 
         return path;
-    }
-
-    private IEnumerator _Move(Vector3[] path) {
-        float movementTimer = 0f;
-        int pathIndex = 0;
-
-        while (pathIndex < path.Length - 1) {
-            Vector3 curr = path[pathIndex];
-            Vector3 next = path[pathIndex + 1];
-
-            while (movementTimer < movementDuration) {
-                transform.position = Vector3.Lerp(curr, next, movementTimer / movementDuration);
-
-                movementTimer += Time.deltaTime;
-                yield return null;
-            }
-
-            movementTimer -= movementDuration;
-            ++pathIndex;
-            yield return null;
-        }
-
-        transform.position = path[path.Length - 1];
-        Casting = false;
     }
 }
 

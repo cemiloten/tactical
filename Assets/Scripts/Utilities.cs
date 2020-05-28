@@ -1,6 +1,8 @@
 using UnityEngine;
 
 public static class Utilities {
+    public static int Distance(Cell start, Cell end) => Distance(start.Position, end.Position);
+
     public static int Distance(Vector2Int start, Vector2Int end) =>
         Mathf.Abs(end.x - start.x) + Mathf.Abs(end.y - start.y);
 

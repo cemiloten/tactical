@@ -47,6 +47,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   health: 3
+  actionPoints: 5
+  startActionPoints: 5
 --- !u!114 &8540908555497788022
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -60,6 +62,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   range: 4
+  cost: 1
   movementDuration: 0.25
 --- !u!114 &8105429000960036389
 MonoBehaviour:
@@ -74,11 +77,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   range: 5
+  cost: 2
+  power: 1
   minDuration: 0.5
   maxDuration: 1
   minJump: 1
   maxJump: 5
-  power: 3
 --- !u!1 &8540908555512428681
 GameObject:
   m_ObjectHideFlags: 0
